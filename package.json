@@ -1,0 +1,13 @@
+{
+  "name": "veterinaria",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sistema académico de turnos para una veterinaria",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

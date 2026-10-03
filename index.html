@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VetTurnos · Registro de mascotas</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Ir al contenido</a>
+  <aside class="sidebar">
+    <a class="brand" href="#inicio"><span class="brand-mark" aria-hidden="true">V</span><span>VetTurnos<small>Gestión veterinaria</small></span></a>
+    <p class="nav-label">RECEPCIÓN</p>
+    <nav aria-label="Navegación principal">
+      <a href="#inicio" class="nav-link" aria-current="page"><span aria-hidden="true">01</span> Inicio</a>
+      <a href="#mascotas" class="nav-link"><span aria-hidden="true">02</span> Mascotas</a>
+    </nav>
+    <div class="sidebar-footer">Cada paciente tiene su historia.<br>Empecemos por conocerlo.</div>
+  </aside>
+
+  <main id="contenido" tabindex="-1">
+    <header class="topbar"><span>Panel de recepción</span><span class="status"><span aria-hidden="true">●</span> Registro de pacientes</span></header>
+
+    <section id="inicio" class="page" aria-labelledby="titulo-inicio">
+      <p class="eyebrow">TU VETERINARIA, EN ORDEN</p>
+      <h1 id="titulo-inicio">Bienvenido a recepción.</h1>
+      <p class="intro">Registra a tus pacientes y mantén sus datos de contacto a mano.</p>
+      <div class="stats">
+        <article class="stat"><p>Mascotas registradas</p><strong id="total-mascotas">0</strong><span>Pacientes en esta sesión</span></article>
+        <article class="stat"><p>Especies registradas</p><strong id="total-especies">0</strong><span>Diversidad de nuestros pacientes</span></article>
+      </div>
+      <div class="welcome-panel">
+        <div><p class="eyebrow">EL PRIMER PASO</p><h2>Conoce a tu próximo paciente.</h2><p>Guarda su nombre, especie y los datos de su propietario.</p><a class="button" href="#mascotas">Registrar una mascota <span aria-hidden="true">→</span></a></div>
+        <div class="patient-illustration" aria-hidden="true"><span class="ear left"></span><span class="ear right"></span><span class="face"><i class="eye left"></i><i class="eye right"></i><i class="nose"></i></span><span class="illustration-label">Un lugar para cuidarlos</span></div>
+      </div>
+    </section>
+
+    <section id="mascotas" class="page" aria-labelledby="titulo-mascotas" hidden>
+      <p class="eyebrow">NUESTROS PACIENTES</p>
+      <h1 id="titulo-mascotas">Registro de mascotas</h1>
+      <p class="intro">Cada registro reúne los datos de la mascota y de su propietario.</p>
+      <p class="session-note">Por ahora, los registros duran hasta que recargues o cierres esta página.</p>
+      <div class="registry-layout">
+        <section class="panel" aria-labelledby="titulo-formulario">
+          <h2 id="titulo-formulario">Nueva mascota</h2>
+          <p class="panel-description">Todos los campos son obligatorios.</p>
+          <form id="formulario-mascota">
+            <label for="nombre">Nombre de la mascota</label>
+            <input id="nombre" name="nombre" maxlength="60" autocomplete="off" placeholder="Ej. Luna" required>
+            <label for="especie">Especie</label>
+            <select id="especie" name="especie" required>
+              <option value="">Selecciona una especie</option>
+              <option value="Perro">Perro</option>
+              <option value="Gato">Gato</option>
+              <option value="Ave">Ave</option>
+              <option value="Conejo">Conejo</option>
+              <option value="Otra">Otra</option>
+            </select>
+            <label for="propietario">Nombre del propietario</label>
+            <input id="propietario" name="propietario" maxlength="100" autocomplete="name" placeholder="Ej. Camilo Villota" required>
+            <label for="telefono">Teléfono de contacto</label>
+            <input id="telefono" name="telefono" type="tel" maxlength="25" autocomplete="tel" placeholder="Ej. 300 123 4567" aria-describedby="ayuda-telefono" required>
+            <small id="ayuda-telefono">Entre 7 y 15 dígitos; puedes incluir el código de país.</small>
+            <button class="button submit-button" type="submit">Registrar mascota <span aria-hidden="true">+</span></button>
+            <p id="mensaje-registro" class="form-message" role="status" aria-live="polite"></p>
+          </form>
+        </section>
+        <section class="panel patients-panel" aria-labelledby="titulo-lista">
+          <div class="list-heading"><h2 id="titulo-lista">Mascotas registradas</h2><span id="contador-lista" class="count-badge">0</span></div>
+          <div id="lista-mascotas" class="patient-list" aria-live="polite">
+            <p class="empty-state">Todavía no hay mascotas registradas.<br><span>Completa el formulario para añadir la primera.</span></p>
+          </div>
+        </section>
+      </div>
+    </section>
+    <footer class="page-footer">VetTurnos · Gestión de pacientes</footer>
+  </main>
+</body>
+</html>
