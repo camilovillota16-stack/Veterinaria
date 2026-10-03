@@ -138,3 +138,9 @@ Pasaron las 43 pruebas automatizadas. Las nuevas y actualizadas cubren varias at
 En una base independiente se preparó Henry demo con Ana y Luna demo como próxima. El navegador ofreció solo Bruno para Luna y permitió llamarla sin cerrar a Henry. La recarga conservó ambas tarjetas y sus botones independientes. Con ambos ocupados, Max demo esperó. Se registró Carla desde Veterinarios; al regresar apareció como disponible para Max sin cerrar ninguna consulta. Al cerrar a Luna, Henry siguió en atención, Bruno reapareció disponible y Max conservó su lugar. El orden de llamada se conserva; la duración permite que Luna termine antes que Henry.
 
 La vista móvil de 360 por 800 mantuvo un ancho de contenido y disponible de 345 píxeles. Los datos y consultas de prueba no se añadieron a la base principal.
+
+## Cuatro veterinarios y acceso al registro
+
+La carga de ejemplos registró Demo Carla Veterinaria y Demo Diego Veterinario en la base principal, ambos con los tres servicios. La API y la pantalla Veterinarios confirmaron cuatro profesionales. Al repetir la carga se reconocieron los cuatro existentes, sin duplicar mascotas ni profesionales ni crear consultas.
+
+Se añadió el bloque Añadir otro veterinario en Turnos. Se comprobó que su enlace abre Veterinarios en modo Nuevo veterinario, con nombre vacío y servicios desmarcados, incluso después de haber seleccionado a Ana para editar. La comprobación de sintaxis de `js/veterinarios.js` pasó. La guía de demostración ahora incluye cuatro consultas simultáneas y un quinto paciente en espera.

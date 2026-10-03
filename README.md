@@ -28,7 +28,7 @@ npm.cmd run datos:demo
 
 El comando registra los ejemplos mediante la API del servidor local. Los propietarios se identifican como Demo Ana, Demo Bruno, Demo Carla y Demo Diego, con un teléfono ficticio de ceros. Incluye dos mascotas llamadas Luna para probar la búsqueda por propietario, tres especies y razas opcionales. Ejecutarlo de nuevo reconoce los ejemplos existentes. Los registros se guardan en la base que usa ese servidor; los turnos de la demostración se solicitan desde la interfaz. El código de carga se incluye en Git y el archivo SQLite sigue siendo local.
 
-También registra dos profesionales ficticios: Demo Ana Veterinaria (Consulta general y Control) y Demo Bruno Veterinario (los tres servicios). Si ya existen por nombre, conserva sus servicios sin reemplazar cambios realizados desde el formulario.
+También registra cuatro profesionales ficticios: Demo Ana Veterinaria (Consulta general y Control), Demo Bruno Veterinario, Demo Carla Veterinaria y Demo Diego Veterinario (estos últimos ofrecen los tres servicios). Si ya existen por nombre, conserva sus servicios sin reemplazar cambios realizados desde el formulario. Esto permite demostrar cuatro consultas simultáneas con mascotas diferentes.
 
 Al iniciar, se crean automáticamente las tablas y el archivo `data/veterinaria.db`. Las tablas `propietarios` y `mascotas` se relacionan mediante `propietario_id`. Un registro reutiliza al propietario si coinciden su nombre sin distinguir mayúsculas y su teléfono sin separadores; personas con distinto nombre pueden compartir teléfono. Este criterio es una simplificación para la primera versión.
 

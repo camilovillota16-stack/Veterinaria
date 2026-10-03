@@ -48,6 +48,8 @@ try {
   for (const ejemplo of [
     { nombre: "Demo Ana Veterinaria", nombresServicios: ["Consulta general", "Control"] },
     { nombre: "Demo Bruno Veterinario", nombresServicios: ["Consulta general", "Vacunación", "Control"] },
+    { nombre: "Demo Carla Veterinaria", nombresServicios: ["Consulta general", "Vacunación", "Control"] },
+    { nombre: "Demo Diego Veterinario", nombresServicios: ["Consulta general", "Vacunación", "Control"] },
   ]) {
     if (veterinarios.some((v) => v.nombre.toLocaleLowerCase("es") === ejemplo.nombre.toLocaleLowerCase("es"))) {
       console.log(`Ya existe el profesional: ${ejemplo.nombre}`);
