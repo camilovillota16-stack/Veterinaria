@@ -102,3 +102,23 @@ Hay tres estructuras implementadas: cola, trie y heap. Quedan pendientes el graf
 Se ejecutó `npm.cmd run datos:demo` con el servidor principal en el puerto 3000: se registraron seis mascotas ficticias mediante la API. La consulta de SQLite confirmó siete mascotas incluyendo Henry y cinco propietarios en total. Hay dos Luna, pertenecientes a propietarios distintos, y tres especies. Se conservan los dos turnos finalizados anteriores y no se crearon turnos adicionales durante la carga.
 
 Una segunda ejecución indicó cero mascotas nuevas y seis ejemplos ya existentes. La recarga del navegador principal mostró siete mascotas y tres especies en Inicio. Los ejemplos persisten en la base principal; el repositorio contiene el script y la guía de demostración, mientras el archivo SQLite permanece excluido de Git.
+
+## Clase 6 Grafo y asignación de veterinarios
+
+Las 38 pruebas automatizadas pasaron el 3 de octubre de 2026. Las ocho nuevas cubren conexiones bidireccionales y vecinos comunes, validación y edición de profesionales, cobertura de todos los servicios por un mismo profesional, falta de compatibles sin perder ni saltar urgencias, selección del próximo paciente desactualizada, edición y reasignación conservando compatibilidad, persistencia, migración de visitas antiguas sin profesional, reversión de nombre y conexiones ante fallos simulados y rutas HTTP. Las pruebas anteriores incorporan un profesional de prueba como requisito para llamar; la base nueva de la aplicación no crea profesionales automáticamente.
+
+Comprobación del navegador con una base independiente en el puerto 3001:
+
+| Comprobación | Resultado observado |
+| --- | --- |
+| Luna pendiente con Consulta general y Vacunación, sin profesionales | Llamar siguiente deshabilitado; mensaje para registrar un profesional compatible. |
+| Registrar Ana con solo Consulta general | Sigue sin haber profesional compatible; Luna permanece pendiente. |
+| Registrar Bruno con los tres servicios | El selector del próximo paciente muestra solo Bruno. |
+| Llamar a Luna y recargar | Atención y asignación a Bruno conservadas. |
+| Editar Ana para añadir Vacunación | Ana aparece también como compatible al volver a Turnos. |
+| Reasignar la atención a Ana y recargar | La tarjeta y el selector conservan Ana. |
+| Turnos y Veterinarios en móvil de 360 por 800 | Contenido y ancho disponible de 345 píxeles, sin desbordamiento horizontal. |
+
+Se reinició el servidor principal con la migración del veterinario. La carga de demostración conservó las seis mascotas existentes y añadió dos profesionales ficticios. Repetirla reconoció ambos profesionales sin duplicarlos. El navegador principal muestra Ana con Consulta general y Control y Bruno con los tres servicios. No se añadieron visitas de prueba a la base principal.
+
+Hay cuatro estructuras implementadas: cola, trie, heap y grafo. Quedan pendientes la lista enlazada del historial, el registro de observaciones y la publicación.

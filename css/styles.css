@@ -101,6 +101,8 @@ form small { color: var(--muted); font-size: 11px; line-height: 1.6; }
 .urgent-card { border-color: #e3c08b; background: #fffbf4; }
 .urgent-card .queue-position { color: #855621; }
 .urgent-tag { background: #fff0d8; color: #855621; }
+.assignment-label { display: block; margin-top: 24px; }
+.current-turn label { display: block; margin-top: 18px; }
 @media (min-width: 1600px) { main { margin-right: auto; } }
 @media (max-width: 1050px) {
   .sidebar { width: 200px; padding: 28px 18px; }

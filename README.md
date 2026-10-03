@@ -4,7 +4,7 @@ Proyecto académico en JavaScript para registrar mascotas, gestionar turnos norm
 
 ## Estado del proyecto
 
-Interfaz funcional con registro de mascotas, propietarios y turnos normales y urgentes persistentes en SQLite. Una visita admite varios servicios y un motivo opcional. El formulario Turnos busca mascotas por nombre o propietario y permite actualizar visitas activas. Hay tres estructuras propias implementadas: una cola FIFO, un trie para la búsqueda y un heap para las urgencias. Quedan pendientes la lista del historial y el grafo. La aplicación funciona localmente y no está publicada en internet.
+Interfaz funcional con mascotas, propietarios, visitas y veterinarios persistentes en SQLite. Una visita admite varios servicios y un motivo opcional. Turnos busca mascotas por nombre o propietario y permite actualizar visitas activas. Hay cuatro estructuras propias implementadas: cola FIFO, trie, heap de urgencias y grafo para asignar profesionales que ofrezcan todos los servicios de la visita. Quedan pendientes la lista del historial y la publicación en internet.
 
 ## Ejecutar localmente
 
@@ -16,7 +16,7 @@ npm.cmd start
 
 Abre http://localhost:3000. Detén el servidor con `Ctrl+C`. Esta etapa usa solo módulos incluidos en Node.js y no necesita instalar dependencias externas. Debes acceder mediante el servidor; abrir el HTML directamente ya no permite consultar ni guardar registros.
 
-Las guías están en [clase 1](docs/LECCION_01.md), [clase 2](docs/LECCION_02.md), [clase 3 sobre la cola](docs/LECCION_03.md), [clase 4 sobre visitas y búsqueda](docs/LECCION_04.md) y [clase 5 sobre urgencias](docs/LECCION_05.md).
+Las guías están en [clase 1](docs/LECCION_01.md), [clase 2](docs/LECCION_02.md), [clase 3 sobre la cola](docs/LECCION_03.md), [clase 4 sobre visitas y búsqueda](docs/LECCION_04.md), [clase 5 sobre urgencias](docs/LECCION_05.md) y [clase 6 sobre veterinarios y grafo](docs/LECCION_06.md).
 
 ## Base de datos y API
 
@@ -27,6 +27,8 @@ npm.cmd run datos:demo
 ```
 
 El comando registra los ejemplos mediante la API del servidor local. Los propietarios se identifican como Demo Ana, Demo Bruno, Demo Carla y Demo Diego, con un teléfono ficticio de ceros. Incluye dos mascotas llamadas Luna para probar la búsqueda por propietario, tres especies y razas opcionales. Ejecutarlo de nuevo reconoce los ejemplos existentes. Los registros se guardan en la base que usa ese servidor; los turnos de la demostración se solicitan desde la interfaz. El código de carga se incluye en Git y el archivo SQLite sigue siendo local.
+
+También registra dos profesionales ficticios: Demo Ana Veterinaria (Consulta general y Control) y Demo Bruno Veterinario (los tres servicios). Si ya existen por nombre, conserva sus servicios sin reemplazar cambios realizados desde el formulario.
 
 Al iniciar, se crean automáticamente las tablas y el archivo `data/veterinaria.db`. Las tablas `propietarios` y `mascotas` se relacionan mediante `propietario_id`. Un registro reutiliza al propietario si coinciden su nombre sin distinguir mayúsculas y su teléfono sin separadores; personas con distinto nombre pueden compartir teléfono. Este criterio es una simplificación para la primera versión.
 
@@ -40,8 +42,12 @@ El registro de propietario y mascota se ejecuta en una transacción: ambos se gu
 | `/api/turnos` | GET | Consultar espera normal, urgencias por prioridad, próximo paciente, atención actual y servicios. |
 | `/api/turnos` | POST | Solicitar una visita con `mascotaId`, `serviciosIds`, `tipo`, `prioridad` y `motivo` opcional. |
 | `/api/turnos/actualizar` | POST | Actualizar servicios y motivo mediante `turnoId`; también tipo y prioridad mientras esté pendiente. |
-| `/api/turnos/llamar` | POST | Pasar la primera urgencia del heap a atención o, si no hay, el primer turno normal de la cola. |
+| `/api/turnos/llamar` | POST | Llamar al próximo paciente y asignar `veterinarioId`; `turnoId` opcional protege contra una selección desactualizada. |
+| `/api/turnos/asignar` | POST | Asignar o cambiar el profesional compatible de la atención actual mediante `turnoId` y `veterinarioId`. |
 | `/api/turnos/finalizar` | POST | Cerrar el turno que está en atención. |
+| `/api/veterinarios` | GET | Listar profesionales y sus servicios. |
+| `/api/veterinarios` | POST | Registrar un profesional con `nombre` y `serviciosIds`. |
+| `/api/veterinarios/actualizar` | POST | Reemplazar nombre y servicios mediante `veterinarioId`, `nombre` y `serviciosIds`. |
 
 La tabla `turnos` conserva el estado y el orden de llegada. El backend reconstruye una `Cola` desde los normales pendientes y un `HeapPrioridad` desde las urgencias pendientes. Crear un turno utiliza `encolar` o `insertar`; llamar al siguiente utiliza `extraer` del heap, o `desencolar` si no hay urgencias. La cola se reconstruye en O(n) y sus operaciones cuestan O(1). Insertar y extraer del heap cuestan O(log u); reconstruirlo con inserciones y producir su vista ordenada cuestan O(u log u), donde u es la cantidad de urgencias. La vista usa una copia del heap, sin consumir la espera real.
 
@@ -51,7 +57,13 @@ Una mascota no puede tener dos turnos activos y solo puede haber un paciente en 
 
 El trie se reconstruye al iniciar y se amplía después de guardar una mascota. Indexa nombres completos y sus palabras, ignora tildes y mayúsculas, y conserva identificadores distintos para nombres repetidos. Encontrar el nodo cuesta O(p), donde p es la longitud del prefijo; recuperar k resultados cuesta O(k), y ordenarlos por identificador cuesta O(k log k). La interfaz muestra hasta 30 resultados y conserva el seleccionado si también coincide; se puede escribir más letras para localizar cualquier mascota.
 
-Los servicios iniciales son Consulta general, Vacunación y Control. Cerrar un turno cambia su estado; el registro de consultas con veterinario e historial se añadirá en las siguientes etapas.
+Los servicios iniciales son Consulta general, Vacunación y Control. Cada veterinario ofrece al menos uno. En esta versión los nombres de profesionales son únicos sin distinguir mayúsculas; los identificadores mantienen las relaciones. Nombre y conexiones se guardan en una transacción.
+
+El grafo propio usa listas de adyacencia con `Map` y `Set`: vértices `veterinario:ID` y `servicio:ID`, conectados en ambos sentidos. Se reconstruye desde `veterinarios`, `servicios` y `veterinario_servicios`; los vecinos comunes de los servicios son los profesionales compatibles. Su construcción cuesta O(V + S + E). Para una visita con k servicios, la intersección cuesta O(d × k), donde d es el número de profesionales del primer servicio; después se filtra la lista de V profesionales para conservar su orden.
+
+Un solo profesional cubre todos los servicios de cada visita y se guarda en `turnos.veterinario_id`. Si no hay uno compatible, el próximo paciente sigue pendiente; no se salta al siguiente. La interfaz envía la elección explícita. La API permite omitir `veterinarioId` y usa el primer compatible por identificador. La llamada y la asignación se guardan juntas en una transacción. No se pueden retirar servicios al profesional ni cambiar los de una atención si esto invalida su asignación actual; se puede reasignar antes a otro compatible. Como solo hay una atención simultánea, no se requiere una agenda por profesional.
+
+Las visitas anteriores conservan sus datos al añadir la columna del veterinario. Una atención antigua sin profesional debe asignarlo antes de cerrar; los turnos ya finalizados permanecen con asignación vacía. Cerrar cambia el estado del turno; el registro de observaciones y el historial se añadirán en la siguiente etapa.
 
 El archivo de datos se conserva al detener el servidor y se excluye de Git. Al descargar el código en otro equipo se crea una base vacía. Para la publicación posterior se deberá elegir un servidor con almacenamiento persistente para SQLite.
 
@@ -74,7 +86,7 @@ Las pruebas usan bases independientes de los registros de la aplicación. Cubren
 - Registrar propietarios y mascotas.
 - Solicitar visitas con uno o varios servicios, motivo y prioridad.
 - Llamar al siguiente paciente: primero las urgencias y después los turnos normales.
-- Asignar un veterinario que ofrezca el servicio solicitado.
+- Asignar un veterinario que ofrezca todos los servicios solicitados.
 - Finalizar la atención y registrar las observaciones de la consulta.
 - Buscar mascotas por el inicio de su nombre y consultar su historial.
 
@@ -86,7 +98,7 @@ Las pruebas usan bases independientes de los registros de la aplicación. Cubren
 | Cola | Implementada con nodos enlazados para procesar turnos normales por orden de llegada. |
 | Heap de prioridad | Implementado: urgencias por prioridad y, en caso de empate, por orden de llegada. |
 | Trie | Implementado: buscar mascotas por prefijo del nombre o propietario, conservando los identificadores de mascotas con nombres iguales. |
-| Grafo | Representar veterinarios y servicios como vértices, con conexiones que indican qué servicios ofrece cada veterinario. |
+| Grafo | Implementado: vecinos comunes de los servicios para asignar un veterinario compatible con toda la visita. |
 
 Las cinco estructuras tendrán implementaciones propias en JavaScript y participarán en operaciones reales de la aplicación. La base de datos conservará los registros; al iniciar el sistema se reconstruirán las estructuras necesarias a partir de los datos guardados.
 
