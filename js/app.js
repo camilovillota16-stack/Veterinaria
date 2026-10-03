@@ -1,5 +1,5 @@
-// Estado de esta primera versión. Se pierde al recargar la página.
-// Este arreglo es temporal: no sustituye las estructuras propias de la rúbrica.
+// Copia en memoria de los registros que recuperamos de la base de datos.
+// Este arreglo no sustituye las cinco estructuras propias de la rúbrica.
 const mascotas = [];
 
 // El DOM es la representación de los elementos HTML que JavaScript puede modificar.
@@ -9,6 +9,11 @@ const mensaje = document.querySelector("#mensaje-registro");
 const nombreInput = document.querySelector("#nombre");
 const propietarioInput = document.querySelector("#propietario");
 const telefonoInput = document.querySelector("#telefono");
+const botonRegistrar = formulario.querySelector('button[type="submit"]');
+const estadoDatos = document.querySelector("#estado-datos");
+const botonReintentar = document.querySelector("#reintentar-carga");
+let datosCargados = false;
+let guardando = false;
 
 function mostrarPagina() {
   const pagina = location.hash === "#mascotas" ? "mascotas" : "inicio";
@@ -78,9 +83,50 @@ function crearTarjeta(mascota) {
   return tarjeta;
 }
 
-function registrarMascota(evento) {
+function dibujarMascotas() {
+  lista.replaceChildren();
+  if (!mascotas.length) {
+    const vacio = document.createElement("p");
+    vacio.className = "empty-state";
+    vacio.textContent = "Todavía no hay mascotas registradas. Completa el formulario para añadir la primera.";
+    lista.append(vacio);
+  } else {
+    mascotas.forEach((mascota) => lista.append(crearTarjeta(mascota)));
+  }
+  actualizarResumen();
+}
+
+async function cargarMascotas() {
+  datosCargados = false;
+  botonRegistrar.disabled = true;
+  botonReintentar.hidden = true;
+  estadoDatos.textContent = "Cargando los registros guardados…";
+  try {
+    const respuesta = await fetch("/api/mascotas");
+    if (!respuesta.ok) throw new Error("No se pudieron consultar los registros.");
+    const guardadas = await respuesta.json();
+    if (!Array.isArray(guardadas)) throw new Error("Respuesta de registros inválida.");
+    mascotas.splice(0, mascotas.length, ...guardadas);
+    dibujarMascotas();
+    datosCargados = true;
+    estadoDatos.textContent = "Tus registros se guardan y estarán disponibles al volver a abrir la aplicación.";
+  } catch {
+    estadoDatos.textContent = "No se pudieron cargar los registros. Comprueba que el servidor esté funcionando y vuelve a intentarlo.";
+    lista.replaceChildren();
+    const aviso = document.createElement("p");
+    aviso.className = "empty-state";
+    aviso.textContent = "Los registros no están disponibles en este momento.";
+    lista.append(aviso);
+    botonReintentar.hidden = false;
+  } finally {
+    botonRegistrar.disabled = !datosCargados;
+  }
+}
+
+async function registrarMascota(evento) {
   // Impide que el navegador envíe el formulario y recargue la página.
   evento.preventDefault();
+  if (!datosCargados || guardando) return;
 
   const datos = new FormData(formulario);
   const mascota = {
@@ -105,16 +151,36 @@ function registrarMascota(evento) {
     return;
   }
 
-  mascotas.push(mascota);
+  guardando = true;
+  botonRegistrar.disabled = true;
+  mostrarMensaje("Guardando mascota…");
+  try {
+    // POST envía el objeto al servidor. JSON lo convierte en texto para transportarlo.
+    const respuesta = await fetch("/api/mascotas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(mascota),
+    });
+    const resultado = await respuesta.json();
+    if (!respuesta.ok) throw new Error(resultado.error || "No se pudo registrar la mascota.");
 
-  if (mascotas.length === 1) {
-    lista.replaceChildren();
+    // Añadimos la tarjeta solo cuando el servidor confirma que guardó el registro.
+    mascotas.push(resultado);
+    dibujarMascotas();
+    formulario.reset();
+    mostrarMensaje(`${resultado.nombre} fue registrada correctamente.`);
+    nombreInput.focus();
+  } catch (error) {
+    const detalle = error instanceof TypeError
+      ? "No se pudo conectar con el servidor."
+      : error instanceof SyntaxError
+        ? "No se recibió una confirmación válida."
+        : error.message;
+    mostrarMensaje(`No se confirmó el registro. ${detalle} Tus campos se conservan; si hubo un problema de conexión, recarga para comprobar si se guardó.`, true);
+  } finally {
+    guardando = false;
+    botonRegistrar.disabled = !datosCargados;
   }
-  lista.append(crearTarjeta(mascota));
-  actualizarResumen();
-  formulario.reset();
-  mostrarMensaje(`${mascota.nombre} fue registrada correctamente.`);
-  nombreInput.focus();
 }
 
 formulario.addEventListener("submit", registrarMascota);
@@ -124,5 +190,7 @@ document.querySelector(".skip-link").addEventListener("click", (evento) => {
   document.querySelector("#contenido").focus();
 });
 window.addEventListener("hashchange", mostrarPagina);
+botonReintentar.addEventListener("click", cargarMascotas);
 mostrarPagina();
 actualizarResumen();
+cargarMascotas();

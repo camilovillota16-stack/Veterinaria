@@ -1,57 +1,28 @@
-import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { crearAlmacen } from "./db/database.mjs";
+import { crearServidor } from "./api/servidor.mjs";
 
-// Este servidor solo entrega la interfaz. La API y la base de datos vendrán después.
-const archivos = new Map([
-  ["/", ["index.html", "text/html"]],
-  ["/index.html", ["index.html", "text/html"]],
-  ["/css/styles.css", ["css/styles.css", "text/css"]],
-  ["/js/app.js", ["js/app.js", "text/javascript"]],
-]);
+const puerto = Number(process.env.PORT ?? 3000);
+if (!Number.isInteger(puerto) || puerto < 1 || puerto > 65535) {
+  throw new Error("PORT debe ser un puerto entre 1 y 65535.");
+}
+const rutaDatos = process.env.VETERINARIA_DB_PATH
+  || fileURLToPath(new URL("data/veterinaria.db", import.meta.url));
+const almacen = crearAlmacen(rutaDatos);
+const servidor = crearServidor(almacen);
 
-const servidor = createServer(async (solicitud, respuesta) => {
-  if (solicitud.method !== "GET" && solicitud.method !== "HEAD") {
-    respuesta.writeHead(405, { Allow: "GET, HEAD" });
-    respuesta.end("Método no permitido");
-    return;
-  }
-
-  let ruta;
-  try {
-    ruta = new URL(solicitud.url, "http://localhost").pathname;
-  } catch {
-    respuesta.writeHead(400);
-    respuesta.end("Solicitud inválida");
-    return;
-  }
-
-  const archivo = archivos.get(ruta);
-  if (!archivo) {
-    respuesta.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-    respuesta.end("Página no encontrada");
-    return;
-  }
-
-  try {
-    const contenido = await readFile(new URL(archivo[0], import.meta.url));
-    respuesta.writeHead(200, {
-      "Content-Type": `${archivo[1]}; charset=utf-8`,
-      "Cache-Control": "no-store",
-    });
-    respuesta.end(solicitud.method === "HEAD" ? undefined : contenido);
-  } catch (error) {
-    console.error("No se pudo leer el archivo:", error.message);
-    respuesta.writeHead(500);
-    respuesta.end("No se pudo cargar la página");
-  }
-});
-
+servidor.once("close", () => almacen.cerrar());
 servidor.on("error", (error) => {
   console.error("No se pudo iniciar el servidor:", error.message);
+  almacen.cerrar();
   process.exitCode = 1;
 });
+process.on("SIGINT", () => servidor.close());
+process.on("SIGTERM", () => servidor.close());
 
-servidor.listen(3000, "127.0.0.1", () => {
-  console.log("Veterinaria disponible en http://localhost:3000");
+// Por ahora ejecutamos la aplicación solo en el equipo local.
+servidor.listen(puerto, "127.0.0.1", () => {
+  console.log(`Veterinaria disponible en http://localhost:${puerto}`);
+  console.log("Registros persistentes en:", rutaDatos);
   console.log("Presiona Ctrl+C para detener el servidor.");
 });
