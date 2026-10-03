@@ -79,6 +79,13 @@ function crearTarjeta(mascota) {
 
   // textContent muestra lo escrito como texto, sin interpretarlo como HTML.
   detalles.append(titulo, especie, raza, propietario, telefono);
+  const historial = document.createElement('button');
+  historial.type = 'button';
+  historial.className = 'button history-button';
+  historial.textContent = 'Ver historial';
+  historial.setAttribute('aria-label', `Ver historial de ${mascota.nombre} · #${mascota.id}`);
+  historial.addEventListener('click', () => abrirHistorial(mascota));
+  detalles.append(historial);
   tarjeta.append(avatar, detalles);
   return tarjeta;
 }

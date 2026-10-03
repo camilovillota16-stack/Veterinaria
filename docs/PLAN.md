@@ -49,7 +49,7 @@ Los mensajes se ajustarán al cambio real. Si un avance necesita varias etapas i
 - Relación entre veterinario y servicio: identificadores de ambos.
 - Turno o visita: identificador, mascota, veterinario asignado, motivo opcional, tipo, prioridad, orden de llegada y estado.
 - Servicio de una visita: identificadores del turno y del servicio; una visita admite varios servicios.
-- Consulta: identificador, turno, veterinario, fecha y observaciones.
+- Consulta: identificador, turno, mascota, veterinario, fecha, observaciones y copia del nombre del profesional, servicios, motivo y clasificación al cerrar.
 
 ## Reglas de funcionamiento
 
@@ -65,6 +65,8 @@ Los mensajes se ajustarán al cambio real. Si un avance necesita varias etapas i
 - El profesional asignado se conserva durante la consulta. Cada atención tiene su propio cierre, que solo libera al veterinario correspondiente. La pantalla Veterinarios muestra Disponible u Ocupado y permite registrar más profesionales mientras hay consultas abiertas.
 - El orden de llamada respeta prioridad y llegada; el orden de cierre depende de la duración de cada consulta y puede ser distinto.
 - Finalizar una atención guarda la consulta y cambia el estado del turno en una misma transacción de base de datos.
+- Las observaciones son opcionales y admiten hasta 2000 caracteres. El historial muestra solo consultas finalizadas, de la más reciente a la más antigua, mediante una lista enlazada propia.
+- Los cambios posteriores al profesional no modifican la copia guardada en el historial. Las visitas anteriores a esta función se recuperan con sus datos disponibles y sin inventar información faltante.
 - Si falla la persistencia, se conserva o restaura la coherencia de las estructuras en memoria.
 - La búsqueda por prefijo del nombre o propietario permite distinguir mascotas con el mismo nombre mediante su propietario o identificador.
 
@@ -81,3 +83,7 @@ Los mensajes se ajustarán al cambio real. Si un avance necesita varias etapas i
 - El enlace público permite completar el flujo desde registrar una mascota hasta consultar su atención.
 
 Las comprobaciones se ejecutarán cuando exista la función correspondiente. La planificación inicial no representa una aplicación probada.
+
+## Estado después de la clase 7
+
+Las cinco estructuras ya participan en el flujo de la aplicación y las consultas persisten después del cierre y del reinicio. Pasaron 49 pruebas automatizadas; las comprobaciones del navegador están en PRUEBAS.md. Faltan la publicación, la comprobación desde los enlaces públicos y el documento final de entrega.

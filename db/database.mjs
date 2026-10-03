@@ -6,6 +6,7 @@ import { Cola } from "../estructuras/cola.mjs";
 import { Trie, normalizarBusqueda } from "../estructuras/trie.mjs";
 import { HeapPrioridad } from "../estructuras/heap.mjs";
 import { Grafo } from "../estructuras/grafo.mjs";
+import { ListaEnlazada } from "../estructuras/lista.mjs";
 
 export function crearAlmacen(ruta) {
   if (ruta !== ":memory:") mkdirSync(dirname(resolve(ruta)), { recursive: true });
@@ -85,7 +86,35 @@ export function crearAlmacen(ruta) {
       ) STRICT;
       INSERT OR IGNORE INTO turno_servicios (turno_id, servicio_id)
         SELECT id, servicio_id FROM turnos;
+      CREATE TABLE IF NOT EXISTS consultas (
+        id INTEGER PRIMARY KEY,
+        turno_id INTEGER NOT NULL UNIQUE REFERENCES turnos(id),
+        mascota_id INTEGER NOT NULL REFERENCES mascotas(id),
+        veterinario_id INTEGER REFERENCES veterinarios(id),
+        veterinario_nombre TEXT NOT NULL,
+        servicios_json TEXT NOT NULL,
+        motivo TEXT NOT NULL,
+        tipo TEXT NOT NULL,
+        prioridad INTEGER NOT NULL,
+        observaciones TEXT NOT NULL,
+        fecha TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+        origen TEXT NOT NULL DEFAULT 'actual' CHECK (origen IN ('actual', 'anterior'))
+      ) STRICT;
+      CREATE INDEX IF NOT EXISTS consultas_por_mascota ON consultas(mascota_id, fecha, id);
     `);
+    // Recuperar visitas ya cerradas sin inventar observaciones ni profesionales.
+    const anteriores = conexion.prepare(`SELECT t.*, v.nombre AS veterinario_nombre FROM turnos t
+      LEFT JOIN veterinarios v ON v.id = t.veterinario_id
+      WHERE t.estado = 'finalizado' AND NOT EXISTS (SELECT 1 FROM consultas c WHERE c.turno_id = t.id)
+      ORDER BY COALESCE(t.finalizado_en, t.creado_en), t.id`).all();
+    const serviciosAnteriores = conexion.prepare(`SELECT s.id, s.nombre FROM turno_servicios ts
+      JOIN servicios s ON s.id = ts.servicio_id WHERE ts.turno_id = ? ORDER BY s.id`);
+    const migrarConsulta = conexion.prepare(`INSERT INTO consultas
+      (turno_id, mascota_id, veterinario_id, veterinario_nombre, servicios_json, motivo, tipo, prioridad, observaciones, fecha, origen)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', ?, 'anterior')`);
+    anteriores.forEach((t) => migrarConsulta.run(t.id, t.mascota_id, t.veterinario_id, t.veterinario_nombre ?? '',
+      JSON.stringify(serviciosAnteriores.all(t.id)), t.motivo, t.tipo, t.prioridad,
+      (t.finalizado_en ?? t.creado_en).includes('T') ? (t.finalizado_en ?? t.creado_en) : `${(t.finalizado_en ?? t.creado_en).replace(' ', 'T')}Z`));
     conexion.exec("COMMIT");
   } catch (error) {
     conexion.exec("ROLLBACK");
@@ -143,7 +172,14 @@ export function crearAlmacen(ruta) {
   `);
   const llamarTurno = conexion.prepare("UPDATE turnos SET estado = 'en_atencion', llamado_en = CURRENT_TIMESTAMP, veterinario_id = ? WHERE id = ? AND estado = 'pendiente'");
   const asignarTurno = conexion.prepare("UPDATE turnos SET veterinario_id = ? WHERE id = ? AND estado = 'en_atencion'");
-  const cerrarTurno = conexion.prepare("UPDATE turnos SET estado = 'finalizado', finalizado_en = CURRENT_TIMESTAMP WHERE id = ? AND estado = 'en_atencion'");
+  const cerrarTurno = conexion.prepare("UPDATE turnos SET estado = 'finalizado', finalizado_en = ? WHERE id = ? AND estado = 'en_atencion'");
+  const insertarConsulta = conexion.prepare(`INSERT INTO consultas
+    (turno_id, mascota_id, veterinario_id, veterinario_nombre, servicios_json, motivo, tipo, prioridad, observaciones)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+  const consultarHistorial = conexion.prepare(`SELECT id, turno_id AS turnoId, veterinario_id AS veterinarioId,
+    veterinario_nombre AS veterinario, servicios_json AS serviciosJson, motivo, tipo, prioridad, observaciones, fecha, origen
+    FROM consultas WHERE mascota_id = ? ORDER BY julianday(fecha), id`);
+  const fechaConsulta = conexion.prepare('SELECT fecha FROM consultas WHERE turno_id = ?');
   const consultarVeterinarios = conexion.prepare("SELECT id, nombre FROM veterinarios ORDER BY id");
   const buscarVeterinario = conexion.prepare("SELECT id, nombre FROM veterinarios WHERE id = ?");
   const buscarNombreVeterinario = conexion.prepare("SELECT id FROM veterinarios WHERE nombre_clave = ?");
@@ -417,6 +453,10 @@ export function crearAlmacen(ruta) {
       || (datos.turnoId !== undefined && (!Number.isSafeInteger(datos.turnoId) || datos.turnoId < 1))) {
       throw new ErrorSolicitud("Selecciona una visita válida para cerrar.");
     }
+    const observaciones = datos.observaciones === undefined ? '' : datos.observaciones;
+    if (typeof observaciones !== 'string' || observaciones.trim().length > 2000) {
+      throw new ErrorSolicitud('Las observaciones deben ser texto de hasta 2000 caracteres.');
+    }
     return enTransaccion(() => {
       const abiertas = enAtencion.all();
       if (datos.turnoId === undefined && abiertas.length > 1) throw new ErrorSolicitud("Selecciona qué consulta quieres cerrar mediante turnoId.", 409);
@@ -424,9 +464,24 @@ export function crearAlmacen(ruta) {
       if (!actual) throw new ErrorSolicitud("No hay un turno en atención.", 409);
       if (actual.estado !== 'en_atencion') throw new ErrorSolicitud("La visita indicada no está en atención. Actualiza los turnos.", 409);
       if (!actual.veterinarioId) throw new ErrorSolicitud("Asigna un veterinario a esta visita antes de cerrarla.", 409);
-      cerrarTurno.run(actual.id);
+      insertarConsulta.run(actual.id, actual.mascotaId, actual.veterinarioId, actual.veterinario,
+        JSON.stringify(consultarServiciosTurno.all(actual.id)), actual.motivo, actual.tipo, actual.prioridad, observaciones.trim());
+      cerrarTurno.run(fechaConsulta.get(actual.id).fecha, actual.id);
       return completarTurno(buscarTurno.get(actual.id));
     });
+  }
+
+  function historialMascota(mascotaId) {
+    if (!Number.isSafeInteger(mascotaId) || mascotaId < 1) throw new ErrorSolicitud('Selecciona una mascota válida.');
+    const mascota = buscarMascota.get(mascotaId);
+    if (!mascota) throw new ErrorSolicitud('La mascota no existe.', 404);
+    const historial = new ListaEnlazada();
+    consultarHistorial.all(mascotaId).forEach(({ serviciosJson, ...consulta }) => {
+      historial.insertarAlInicio({ ...consulta, servicios: JSON.parse(serviciosJson) });
+    });
+    // Recorremos los nodos, desde la consulta más reciente hasta la más antigua.
+    return { mascota: { id: mascota.id, nombre: mascota.nombre, especie: mascota.especie, propietario: mascota.propietario },
+      cantidad: historial.tamano, consultas: historial.aArray() };
   }
 
   function registrarMascota(datos) {
@@ -454,6 +509,7 @@ export function crearAlmacen(ruta) {
     listarMascotas: () => listar.all(),
     buscarMascotas,
     registrarMascota,
+    historialMascota,
     listarVeterinarios,
     registrarVeterinario: (datos) => guardarVeterinario(datos),
     actualizarVeterinario: (datos) => guardarVeterinario(datos, true),

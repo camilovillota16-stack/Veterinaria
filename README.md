@@ -4,7 +4,7 @@ Proyecto académico en JavaScript para registrar mascotas, gestionar turnos norm
 
 ## Estado del proyecto
 
-Interfaz funcional con mascotas, propietarios, visitas y veterinarios persistentes en SQLite. Una visita admite varios servicios y un motivo opcional. Varios veterinarios pueden atender al mismo tiempo, cada uno a su propio paciente. Turnos busca mascotas por nombre o propietario y permite actualizar visitas activas. Hay cuatro estructuras propias implementadas: cola FIFO, trie, heap de urgencias y grafo para asignar profesionales que ofrezcan todos los servicios de la visita. Quedan pendientes la lista del historial y la publicación en internet.
+Interfaz funcional con mascotas, propietarios, visitas, veterinarios y consultas persistentes en SQLite. Una visita admite varios servicios y un motivo opcional. Varios veterinarios pueden atender al mismo tiempo, cada uno a su propio paciente. Turnos busca mascotas por nombre o propietario y permite actualizar visitas activas. Al cerrar una consulta se guardan sus observaciones y se puede consultar su historial desde Mascotas. Las cinco estructuras propias están implementadas: cola FIFO, trie, heap de urgencias, grafo de profesionales y servicios, y lista enlazada del historial. Quedan pendientes la publicación en internet y el documento final de entrega.
 
 ## Ejecutar localmente
 
@@ -16,7 +16,7 @@ npm.cmd start
 
 Abre http://localhost:3000. Detén el servidor con `Ctrl+C`. Esta etapa usa solo módulos incluidos en Node.js y no necesita instalar dependencias externas. Debes acceder mediante el servidor; abrir el HTML directamente ya no permite consultar ni guardar registros.
 
-Las guías están en [clase 1](docs/LECCION_01.md), [clase 2](docs/LECCION_02.md), [clase 3 sobre la cola](docs/LECCION_03.md), [clase 4 sobre visitas y búsqueda](docs/LECCION_04.md), [clase 5 sobre urgencias](docs/LECCION_05.md) y [clase 6 sobre veterinarios y grafo](docs/LECCION_06.md).
+Las guías están en [clase 1](docs/LECCION_01.md), [clase 2](docs/LECCION_02.md), [clase 3 sobre la cola](docs/LECCION_03.md), [clase 4 sobre visitas y búsqueda](docs/LECCION_04.md), [clase 5 sobre urgencias](docs/LECCION_05.md), [clase 6 sobre veterinarios y grafo](docs/LECCION_06.md) y [clase 7 sobre historial y lista enlazada](docs/LECCION_07.md).
 
 ## Base de datos y API
 
@@ -39,12 +39,13 @@ El registro de propietario y mascota se ejecuta en una transacción: ambos se gu
 | `/api/mascotas` | GET | Recuperar las mascotas con los datos de sus propietarios. |
 | `/api/mascotas` | POST | Registrar una mascota y crear o reutilizar su propietario. |
 | `/api/mascotas?q=hen` | GET | Buscar por prefijo del nombre o de una palabra del nombre del propietario. |
+| `/api/mascotas/1/historial` | GET | Recorrer las consultas finalizadas de la mascota indicada, de la más reciente a la más antigua. |
 | `/api/turnos` | GET | Consultar espera normal, urgencias por prioridad, próximo paciente, todas las `atenciones` y servicios. |
 | `/api/turnos` | POST | Solicitar una visita con `mascotaId`, `serviciosIds`, `tipo`, `prioridad` y `motivo` opcional. |
 | `/api/turnos/actualizar` | POST | Actualizar servicios y motivo mediante `turnoId`; también tipo y prioridad mientras esté pendiente. |
 | `/api/turnos/llamar` | POST | Llamar al próximo paciente y asignar `veterinarioId`; `turnoId` opcional protege contra una selección desactualizada. |
 | `/api/turnos/asignar` | POST | Completar la asignación de una atención antigua sin profesional mediante `turnoId` y `veterinarioId`; una asignación existente no se cambia. |
-| `/api/turnos/finalizar` | POST | Cerrar únicamente la consulta indicada por `turnoId`; omitirlo se admite solo cuando hay una sola consulta abierta. |
+| `/api/turnos/finalizar` | POST | Guardar `observaciones` opcionales (hasta 2000 caracteres) y cerrar la consulta indicada por `turnoId`; omitir el identificador se admite solo cuando hay una sola consulta abierta. |
 | `/api/veterinarios` | GET | Listar profesionales y sus servicios. |
 | `/api/veterinarios` | POST | Registrar un profesional con `nombre` y `serviciosIds`. |
 | `/api/veterinarios/actualizar` | POST | Reemplazar nombre y servicios mediante `veterinarioId`, `nombre` y `serviciosIds`. |
@@ -67,7 +68,11 @@ La lista de profesionales indica Disponible u Ocupado. Cada visita incluye `vete
 
 La cola y el heap controlan el orden para empezar la atención. Si Henry llegó antes que Luna con la misma prioridad, se llama primero a Henry; Luna puede comenzar después con otro profesional aunque Henry siga en consulta. Luna puede terminar antes por la duración de su consulta. Elegir otro veterinario no altera el próximo paciente.
 
-Las visitas anteriores conservan sus datos al añadir la columna del veterinario. Una atención antigua sin profesional debe asignarlo antes de cerrar; los turnos ya finalizados permanecen con asignación vacía. Cerrar cambia el estado del turno; el registro de observaciones y el historial se añadirán en la siguiente etapa.
+Una atención antigua sin profesional debe asignarlo antes de cerrar. Al finalizar se inserta una consulta y se cambia el estado del turno en una misma transacción: si falla cualquiera de los dos pasos, se revierten ambos y el veterinario continúa ocupado. Cada turno tiene como máximo una consulta guardada. Las observaciones son opcionales; la interfaz conserva los borradores de otras atenciones mientras se cierra una, hasta recargar la página.
+
+La tabla `consultas` guarda mascota, turno, fecha, clasificación, motivo, observaciones y una copia del nombre del veterinario y de los servicios al cerrar. Así, editar después al profesional no altera la información histórica. Las fechas se guardan en UTC y se muestran en la zona de Bogotá. Los turnos finalizados antes de esta función se recuperan una sola vez, marcados como anteriores y con los datos disponibles; no se inventan observaciones ni un veterinario desconocido.
+
+Para consultar el historial se leen las consultas de una mascota de la más antigua a la más reciente. Cada una se inserta al inicio de una `ListaEnlazada` propia y se recorren sus enlaces para responder de la más reciente a la más antigua. Cada inserción cuesta O(1); construir y recorrer n nodos cuesta O(n), además de la lectura y ordenación en SQLite. La lista se reconstruye en cada consulta del historial; la persistencia corresponde a la base de datos. Los nombres repetidos se distinguen por identificador de mascota.
 
 El archivo de datos se conserva al detener el servidor y se excluye de Git. Al descargar el código en otro equipo se crea una base vacía. Para la publicación posterior se deberá elegir un servidor con almacenamiento persistente para SQLite.
 
@@ -98,13 +103,13 @@ Las pruebas usan bases independientes de los registros de la aplicación. Cubren
 
 | Estructura | Uso |
 | --- | --- |
-| Lista enlazada | Recorrer el historial de consultas de cada mascota. |
+| Lista enlazada | Implementada: insertar y recorrer los nodos del historial de cada mascota, con las consultas recientes primero. |
 | Cola | Implementada con nodos enlazados para procesar turnos normales por orden de llegada. |
 | Heap de prioridad | Implementado: urgencias por prioridad y, en caso de empate, por orden de llegada. |
 | Trie | Implementado: buscar mascotas por prefijo del nombre o propietario, conservando los identificadores de mascotas con nombres iguales. |
 | Grafo | Implementado: vecinos comunes de los servicios para asignar un veterinario compatible con toda la visita. |
 
-Las cinco estructuras tendrán implementaciones propias en JavaScript y participarán en operaciones reales de la aplicación. La base de datos conservará los registros; al iniciar el sistema se reconstruirán las estructuras necesarias a partir de los datos guardados.
+Las cinco estructuras tienen implementaciones propias en JavaScript y participan en operaciones reales de la aplicación. La base de datos conserva los registros; las estructuras se reconstruyen a partir de los datos guardados cuando las operaciones las necesitan.
 
 ## Entrega
 

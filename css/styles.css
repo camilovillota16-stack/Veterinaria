@@ -98,6 +98,10 @@ form small { color: var(--muted); font-size: 11px; line-height: 1.6; }
 .consultation-card p { margin: 10px 0 0; overflow-wrap: anywhere; }
 .add-professional { margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--border); }
 .add-professional .panel-description { margin: 12px 0 18px; }
+.history-panel { margin-top: 28px; scroll-margin-top: 20px; }
+.history-button { margin-top: 12px; padding: 10px 14px; }
+.consultation-card textarea { width: 100%; margin-top: 10px; }
+.history-panel .consultation-card p { white-space: pre-wrap; }
 .queue-position { flex: 0 0 35px; font-weight: 700; color: var(--green); font-size: 18px; }
 .queue-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 24px; }
 .queue-heading h3 { margin: 0; font-size: 14px; }
