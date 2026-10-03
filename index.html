@@ -8,6 +8,7 @@
   <script src="js/app.js" defer></script>
   <script src="js/turnos.js" defer></script>
   <script src="js/veterinarios.js" defer></script>
+  <script src="js/historial.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#contenido">Ir al contenido</a>
@@ -81,6 +82,14 @@
           </div>
         </section>
       </div>
+      <section id="panel-historial" class="panel history-panel" aria-labelledby="titulo-historial" hidden>
+        <div class="list-heading"><h2 id="titulo-historial">Historial de consultas</h2><span id="contador-historial" class="count-badge">0</span></div>
+        <p id="paciente-historial" class="panel-description"></p>
+        <p id="estado-historial" class="form-message" role="status"></p>
+        <button id="recargar-historial" class="button" type="button">Actualizar historial</button>
+        <button id="ocultar-historial" class="button" type="button">Ocultar historial</button>
+        <div id="lista-historial" class="patient-list"></div>
+      </section>
     </section>
     <section id="turnos" class="page" aria-labelledby="titulo-turnos" hidden>
       <p class="eyebrow">ATENCIÓN EN ORDEN</p>

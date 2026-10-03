@@ -15,6 +15,7 @@ let operacionTurno = false;
 let buscando = false;
 let revisionBusqueda = 0;
 let temporizadorBusqueda;
+const borradoresObservaciones = new Map();
 
 function visitaSeleccionada() {
   const id = Number(mascotaTurno.value);
@@ -30,7 +31,7 @@ function actualizarBotonesTurnos() {
   botonLlamar.disabled = bloqueado || sinAsignar || !estadoCola?.cantidad || !veterinarioSiguiente.value;
   veterinarioSiguiente.disabled = bloqueado || sinAsignar || !estadoCola?.siguiente?.veterinariosDisponibles.length;
   document.querySelector("#asignacion-siguiente").hidden = !estadoCola?.siguiente;
-  document.querySelectorAll('#turno-actual button, #turno-actual select').forEach((control) => {
+  document.querySelectorAll('#turno-actual button, #turno-actual select, #turno-actual textarea').forEach((control) => {
     control.disabled = bloqueado || control.dataset.sinOpciones === 'true';
   });
   botonActualizarTurnos.disabled = operacionTurno;
@@ -122,6 +123,9 @@ function mostrarEstadoCola(mascotas, estado) {
     actual.append(vacio);
   }
   estado.atenciones.forEach((turno) => actual.append(tarjetaAtencion(turno)));
+  for (const id of borradoresObservaciones.keys()) {
+    if (!estado.atenciones.some((t) => t.id === id)) borradoresObservaciones.delete(id);
+  }
   document.querySelector("#contador-turnos").textContent = estado.cantidad;
   document.querySelector("#total-turnos").textContent = estado.cantidad;
 }
@@ -144,8 +148,19 @@ function tarjetaAtencion(turno) {
   accion.className = 'button';
   accion.type = 'button';
   if (turno.veterinarioId) {
+    const etiqueta = document.createElement('label');
+    const observaciones = document.createElement('textarea');
+    observaciones.id = `observaciones-${turno.id}`;
+    observaciones.maxLength = 2000;
+    observaciones.rows = 3;
+    observaciones.placeholder = 'Ej. Se realizó control.';
+    observaciones.value = borradoresObservaciones.get(turno.id) ?? '';
+    observaciones.addEventListener('input', () => borradoresObservaciones.set(turno.id, observaciones.value));
+    etiqueta.htmlFor = observaciones.id;
+    etiqueta.textContent = `Observaciones de ${turno.mascotaNombre} · #${turno.id} (opcional)`;
+    tarjeta.append(etiqueta, observaciones);
     accion.textContent = `Cerrar turno de ${turno.mascotaNombre} · #${turno.id}`;
-    accion.addEventListener('click', () => enviarOperacionTurno('/api/turnos/finalizar', { turnoId: turno.id }, `Consulta de ${turno.mascotaNombre} cerrada. Su veterinario vuelve a estar disponible.`));
+    accion.addEventListener('click', () => enviarOperacionTurno('/api/turnos/finalizar', { turnoId: turno.id, observaciones: observaciones.value }, `Consulta de ${turno.mascotaNombre} guardada en su historial. Su veterinario vuelve a estar disponible.`));
   } else {
     const etiqueta = document.createElement('label');
     const selector = document.createElement('select');

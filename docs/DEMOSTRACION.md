@@ -39,7 +39,9 @@ En Turnos, el bloque Añadir otro veterinario lleva al formulario de un profesio
 7. Mostrar la espera: Nala, Rocky, Max y la Luna normal (si no hay otros pendientes).
 8. Escoger un profesional compatible, llamar al siguiente y cerrar cada visita para verificar el orden.
 9. Al llegar a la Luna con Consulta general y Vacunación, comprobar que aparecen Bruno, Carla y Diego si están libres: Ana no ofrece vacunación.
-10. Recargar mientras está en atención para mostrar que la asignación se conserva. Después cerrar su turno.
+10. Recargar mientras está en atención para mostrar que la asignación se conserva. Escribir una observación de demostración y cerrar su turno.
+11. Abrir Mascotas y pulsar Ver historial en la tarjeta de esa Luna. Mostrar servicios, veterinario, motivo, observaciones y fecha; recargar para comprobar que siguen guardados.
+12. Abrir el historial de la otra Luna para comprobar que las consultas pertenecen a su identificador, aunque compartan nombre.
 
 Los turnos se crean durante la práctica; la carga de mascotas no crea turnos. Para observar el orden desde una espera limpia, termina las consultas previas antes de iniciar el recorrido. Durante el recorrido puedes llamar al próximo con un veterinario libre sin cerrar las otras consultas.
 
@@ -54,9 +56,14 @@ Los turnos se crean durante la práctica; la carga de mascotas no crea turnos. P
 
 Las llamadas respetan la llegada y prioridad; los cierres pueden ocurrir en otro orden porque las consultas duran tiempos diferentes.
 
+## Historial y lista enlazada
+
+Una mascota puede regresar después de cerrar su visita anterior. Solicita otra visita para la misma mascota, llámala con un profesional disponible, escribe otras observaciones y ciérrala. En Mascotas, Ver historial muestra ambas consultas, empezando por la más reciente. Las observaciones son datos de práctica, sin valor clínico.
+
+Explica el recorrido: SQLite conserva las consultas; el backend las carga en una lista propia de nodos enlazados. Cada inserción al inicio coloca la consulta más reciente delante de la anterior. Recorrer `siguiente` permite enviar todas a la interfaz. El motivo se escribe al solicitar la visita y las observaciones se escriben al finalizarla.
+
 ## Lo que falta para la presentación final
 
-- Guardar consultas y recorrer el historial mediante la lista enlazada.
 - Publicar y comprobar el recorrido desde los enlaces de entrega.
 - Completar el documento final y explicar las cinco estructuras con ejemplos propios.
 

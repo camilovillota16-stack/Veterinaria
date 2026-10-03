@@ -9,6 +9,7 @@ const archivos = new Map([
   ["/js/app.js", ["js/app.js", "text/javascript"]],
   ["/js/turnos.js", ["js/turnos.js", "text/javascript"]],
   ["/js/veterinarios.js", ["js/veterinarios.js", "text/javascript"]],
+  ["/js/historial.js", ["js/historial.js", "text/javascript"]],
 ]);
 
 function responderJson(respuesta, estado, datos) {
@@ -59,6 +60,16 @@ export function crearServidor(almacen) {
         ruta = new URL(solicitud.url, "http://localhost").pathname;
       } catch {
         throw new ErrorSolicitud("Solicitud inválida.");
+      }
+      const historial = /^\/api\/mascotas\/(\d+)\/historial$/.exec(ruta);
+      if (historial) {
+        if (solicitud.method !== 'GET') {
+          respuesta.setHeader('Allow', 'GET');
+          responderJson(respuesta, 405, { error: 'Método no permitido.' });
+        } else {
+          responderJson(respuesta, 200, almacen.historialMascota(Number(historial[1])));
+        }
+        return;
       }
       if (ruta === "/api/mascotas") {
         if (solicitud.method === "GET") {

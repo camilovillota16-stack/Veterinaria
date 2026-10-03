@@ -144,3 +144,13 @@ La vista móvil de 360 por 800 mantuvo un ancho de contenido y disponible de 345
 La carga de ejemplos registró Demo Carla Veterinaria y Demo Diego Veterinario en la base principal, ambos con los tres servicios. La API y la pantalla Veterinarios confirmaron cuatro profesionales. Al repetir la carga se reconocieron los cuatro existentes, sin duplicar mascotas ni profesionales ni crear consultas.
 
 Se añadió el bloque Añadir otro veterinario en Turnos. Se comprobó que su enlace abre Veterinarios en modo Nuevo veterinario, con nombre vacío y servicios desmarcados, incluso después de haber seleccionado a Ana para editar. La comprobación de sintaxis de `js/veterinarios.js` pasó. La guía de demostración ahora incluye cuatro consultas simultáneas y un quinto paciente en espera.
+
+## Clase 7 Historial, observaciones y lista enlazada
+
+Pasaron las 49 pruebas automatizadas el 3 de octubre de 2026. Las seis nuevas cubren la lista propia y su recorrido sin consumir nodos; persistencia del historial; nombres repetidos separados por identificador; copias de nombre y servicios conservadas tras editar al profesional; observaciones opcionales y validación de longitud; cierre duplicado rechazado; reversión completa ante un fallo al insertar la consulta o cerrar el turno; migración sin duplicados de visitas anteriores; orden cronológico entre fechas antiguas sin milisegundos y fechas nuevas; y rutas HTTP con métodos y referencias inválidos. Las comprobaciones de sintaxis y `git diff --check` también pasaron.
+
+Se usó una base independiente en el puerto 3001 con dos mascotas llamadas Luna y una llamada Max. Luna tenía una consulta cerrada y otra abierta con Bruno; Max estaba en atención con Ana. Al escribir notas en ambas y cerrar a Luna, sus observaciones se guardaron y el borrador de Max se conservó. El historial de la primera Luna mostró dos visitas, empezando por la más reciente, con servicios, veterinario, motivo, fecha y observaciones. Las etiquetas `<b>` de una nota se mostraron como texto. El historial de la segunda Luna permaneció vacío. Recargar conservó ambas consultas.
+
+La vista móvil de 360 por 800 tuvo 345 píxeles de ancho disponible y de contenido, sin desbordamiento horizontal. La captura de escritorio se revisó visualmente. Los pacientes y consultas de esta prueba no se añadieron a la base principal.
+
+Al reiniciar el servidor principal, se conservaron sus siete mascotas y cuatro veterinarios. Se recuperaron las seis visitas finalizadas anteriores de Henry, marcadas como anteriores y con los datos disponibles. Las cinco estructuras están implementadas; quedan pendientes la publicación y la documentación final de entrega.
