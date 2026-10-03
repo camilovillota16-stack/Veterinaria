@@ -128,3 +128,13 @@ Hay cuatro estructuras implementadas: cola, trie, heap y grafo. Quedan pendiente
 Pasaron las 39 pruebas automatizadas. Se actualizó la prueba de asignación para rechazar cambios de veterinario durante una consulta y se añadió la comprobación de ocupado/disponible: un profesional ocupado queda fuera de las opciones disponibles, sigue existiendo una sola atención y vuelve a estar disponible al cerrar. Las visitas antiguas sin profesional todavía pueden completar su asignación.
 
 Se comprobó en una base de prueba independiente: Luna en atención con Ana y Max en espera. Turnos mostró el nombre de Ana como ocupada, sin selector para cambiarla ni selector del próximo veterinario. Veterinarios mostró Ana ocupada y Bruno disponible. Al cerrar a Luna, reapareció la selección del próximo profesional con Ana y Bruno, y Llamar siguiente quedó habilitado. Este ajuste mantiene una sola consulta abierta en toda la veterinaria.
+
+## Consultas simultáneas por veterinario
+
+Este avance reemplaza el límite general de una consulta descrito en el ajuste anterior. Ahora cada veterinario puede tener una consulta abierta con un paciente diferente; los profesionales ocupados quedan fuera de la selección. Se conserva el profesional de cada consulta hasta cerrarla.
+
+Pasaron las 43 pruebas automatizadas. Las nuevas y actualizadas cubren varias atenciones, cierre por identificador sin afectar las otras, profesional ocupado rechazado, registro de un tercer profesional durante dos consultas, migración del antiguo índice general, índice único por veterinario, persistencia tras reinicio, reversión de un cierre fallido, API y validación de cierre ambiguo. También se comprobó que elegir otro veterinario no salta al primer paciente y que una urgencia sigue pasando antes que los normales pendientes.
+
+En una base independiente se preparó Henry demo con Ana y Luna demo como próxima. El navegador ofreció solo Bruno para Luna y permitió llamarla sin cerrar a Henry. La recarga conservó ambas tarjetas y sus botones independientes. Con ambos ocupados, Max demo esperó. Se registró Carla desde Veterinarios; al regresar apareció como disponible para Max sin cerrar ninguna consulta. Al cerrar a Luna, Henry siguió en atención, Bruno reapareció disponible y Max conservó su lugar. El orden de llamada se conserva; la duración permite que Luna termine antes que Henry.
+
+La vista móvil de 360 por 800 mantuvo un ancho de contenido y disponible de 345 píxeles. Los datos y consultas de prueba no se añadieron a la base principal.

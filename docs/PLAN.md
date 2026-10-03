@@ -34,7 +34,7 @@ Los mensajes se ajustarán al cambio real. Si un avance necesita varias etapas i
 
 ## Pantallas
 
-1. Inicio: turnos pendientes y paciente en atención.
+1. Inicio: turnos pendientes y acceso a recepción.
 2. Mascotas: registro, búsqueda y consulta del historial.
 3. Turnos: solicitud de turno, pendientes y llamada del siguiente paciente.
 4. Atención: asignación del veterinario y registro de observaciones.
@@ -59,10 +59,11 @@ Los mensajes se ajustarán al cambio real. Si un avance necesita varias etapas i
 - Un turno pendiente se encuentra en la cola normal o en el heap de urgencias, según su tipo.
 - Las urgencias se atienden antes que los turnos normales. A igual prioridad se conserva el orden de llegada.
 - La prioridad urgente va de 1 (baja) a 3 (alta); los normales tienen prioridad 0. Solo se reclasifican visitas pendientes, conservando su llegada original.
-- Llamar al siguiente requiere cerrar la atención actual; una nueva urgencia no interrumpe automáticamente al paciente activo.
+- Cada veterinario puede atender a una mascota distinta al mismo tiempo. Un profesional ocupado queda fuera de la selección para el próximo paciente. Una urgencia no interrumpe consultas abiertas.
 - Un solo veterinario cubre todos los servicios de la visita. El grafo obtiene los vecinos comunes de los servicios y la interfaz permite escoger entre ellos. Sin profesional compatible, el próximo paciente conserva su posición pendiente.
 - Editar los servicios de la atención o del profesional asignado no puede invalidar la asignación actual. Las atenciones antiguas sin profesional requieren asignarlo antes de cerrar.
-- El profesional asignado se conserva durante la consulta. Mientras hay una consulta abierta, se oculta la selección del próximo veterinario; al cerrar vuelve a estar disponible. La pantalla Veterinarios muestra Disponible u Ocupado.
+- El profesional asignado se conserva durante la consulta. Cada atención tiene su propio cierre, que solo libera al veterinario correspondiente. La pantalla Veterinarios muestra Disponible u Ocupado y permite registrar más profesionales mientras hay consultas abiertas.
+- El orden de llamada respeta prioridad y llegada; el orden de cierre depende de la duración de cada consulta y puede ser distinto.
 - Finalizar una atención guarda la consulta y cambia el estado del turno en una misma transacción de base de datos.
 - Si falla la persistencia, se conserva o restaura la coherencia de las estructuras en memoria.
 - La búsqueda por prefijo del nombre o propietario permite distinguir mascotas con el mismo nombre mediante su propietario o identificador.

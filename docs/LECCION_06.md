@@ -57,9 +57,11 @@ SQLite guarda las tablas `veterinarios` y `veterinario_servicios`. La segunda ti
 
 Registrar o editar guarda el nombre y todas sus conexiones en una transacción. Llamar guarda el cambio de estado y la asignación juntos. Si ocurre un error, se revierte toda la operación.
 
-En esta versión un profesional debe cubrir todos los servicios y solo hay una consulta abierta en toda la veterinaria. Sin profesional compatible, se informa el problema y el próximo paciente sigue pendiente. No se modifica la prioridad para resolverlo. Tampoco se permite retirar un servicio que necesita la visita que ese profesional está atendiendo.
+Un profesional debe cubrir todos los servicios. Varios profesionales pueden atender al mismo tiempo, cada uno a una mascota diferente. Sin profesional compatible y libre, se informa el problema y el próximo paciente sigue pendiente. No se modifica la prioridad para resolverlo. Tampoco se permite retirar un servicio que necesita la visita que ese profesional está atendiendo.
 
-El veterinario se elige antes de llamar y se mantiene durante la consulta. Mientras atiende, figura como Ocupado y no aparece como disponible. Se muestra su nombre, sin selector para cambiarlo. La selección del próximo veterinario se oculta hasta cerrar el turno; después el profesional vuelve a estar disponible. En Veterinarios puedes ver el estado de cada profesional.
+El veterinario se elige antes de llamar y se mantiene durante la consulta. Mientras atiende, figura como Ocupado y no aparece como disponible. Se muestra su nombre, sin selector para cambiarlo. Para el próximo paciente puedes elegir a otro profesional libre sin cerrar las consultas anteriores. Cada tarjeta tiene su propio botón de cierre; al cerrarla, solo ese profesional vuelve a estar disponible. En Veterinarios puedes ver sus estados y registrar más profesionales.
+
+La cola y el heap determinan quién empieza primero. Henry puede entrar antes que Luna y seguir en consulta mientras Luna empieza con otro profesional. Si Luna termina antes, su cierre no cambia el orden en que comenzaron ni cierra la consulta de Henry.
 
 Las visitas antiguas se conservan. Si una estaba en atención antes de esta mejora y no tiene veterinario, selecciónalo y pulsa Asignar veterinario antes de cerrarla. Los nombres de los profesionales son únicos sin distinguir mayúsculas; es una simplificación del proyecto.
 

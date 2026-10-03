@@ -7,12 +7,9 @@ const prioridadTurno = document.querySelector("#prioridad-turno");
 const opcionesServicios = document.querySelector("#opciones-servicios");
 const botonTurno = formularioTurno.querySelector('button[type="submit"]');
 const botonLlamar = document.querySelector("#llamar-siguiente");
-const botonCerrar = document.querySelector("#cerrar-turno");
 const botonActualizarTurnos = document.querySelector("#recargar-turnos");
 const avisoTurnos = document.querySelector("#estado-turnos");
 const veterinarioSiguiente = document.querySelector("#veterinario-siguiente");
-const veterinarioActual = document.querySelector("#veterinario-actual");
-const botonAsignar = document.querySelector("#asignar-veterinario");
 let estadoCola = null;
 let operacionTurno = false;
 let buscando = false;
@@ -21,7 +18,7 @@ let temporizadorBusqueda;
 
 function visitaSeleccionada() {
   const id = Number(mascotaTurno.value);
-  return [...(estadoCola?.pendientes ?? []), estadoCola?.enAtencion].find((turno) => turno?.mascotaId === id);
+  return [...(estadoCola?.pendientes ?? []), ...(estadoCola?.atenciones ?? [])].find((turno) => turno?.mascotaId === id);
 }
 function serviciosSeleccionados() {
   return [...opcionesServicios.querySelectorAll("input:checked")].map((input) => Number(input.value));
@@ -29,15 +26,13 @@ function serviciosSeleccionados() {
 function actualizarBotonesTurnos() {
   const bloqueado = operacionTurno || !estadoCola;
   botonTurno.disabled = bloqueado || buscando || !mascotaTurno.value || !serviciosSeleccionados().length;
-  botonLlamar.disabled = bloqueado || Boolean(estadoCola?.enAtencion) || !estadoCola?.cantidad || !veterinarioSiguiente.value;
-  botonCerrar.disabled = bloqueado || !estadoCola?.enAtencion?.veterinarioId;
-  const asignacionPendiente = Boolean(estadoCola?.enAtencion && !estadoCola.enAtencion.veterinarioId);
-  botonAsignar.disabled = bloqueado || !asignacionPendiente || !veterinarioActual.value;
-  veterinarioSiguiente.disabled = bloqueado || Boolean(estadoCola?.enAtencion) || !estadoCola?.siguiente?.veterinariosDisponibles.length;
-  veterinarioActual.disabled = bloqueado || !asignacionPendiente || !estadoCola.enAtencion.veterinariosDisponibles.length;
-  document.querySelector("#asignacion-pendiente").hidden = !asignacionPendiente;
-  document.querySelector("#asignacion-siguiente").hidden = !estadoCola?.siguiente || Boolean(estadoCola?.enAtencion);
-  botonCerrar.hidden = !estadoCola?.enAtencion;
+  const sinAsignar = estadoCola?.atenciones.some((t) => !t.veterinarioId);
+  botonLlamar.disabled = bloqueado || sinAsignar || !estadoCola?.cantidad || !veterinarioSiguiente.value;
+  veterinarioSiguiente.disabled = bloqueado || sinAsignar || !estadoCola?.siguiente?.veterinariosDisponibles.length;
+  document.querySelector("#asignacion-siguiente").hidden = !estadoCola?.siguiente;
+  document.querySelectorAll('#turno-actual button, #turno-actual select').forEach((control) => {
+    control.disabled = bloqueado || control.dataset.sinOpciones === 'true';
+  });
   botonActualizarTurnos.disabled = operacionTurno;
   mascotaTurno.disabled = bloqueado || buscando;
   buscadorTurno.disabled = operacionTurno;
@@ -77,7 +72,7 @@ function mostrarResultados(mascotas) {
   if (seleccionada && !visibles.includes(seleccionada)) visibles.push(seleccionada);
   mascotaTurno.replaceChildren(opcionTurno("", mascotas.length ? "Selecciona una mascota" : "Sin coincidencias"));
   visibles.forEach((mascota) => {
-    const visita = [...estadoCola.pendientes, estadoCola.enAtencion].find((turno) => turno?.mascotaId === mascota.id);
+    const visita = [...estadoCola.pendientes, ...estadoCola.atenciones].find((turno) => turno?.mascotaId === mascota.id);
     mascotaTurno.append(opcionTurno(mascota.id, `${mascota.nombre} · ${mascota.propietario} · #${mascota.id}${visita ? " (visita activa)" : ""}`));
   });
   mascotaTurno.value = seleccionada ? seleccion : "";
@@ -106,45 +101,72 @@ function mostrarEstadoCola(mascotas, estado) {
   document.querySelector("#contador-urgencias").textContent = estado.cantidadUrgentes;
   document.querySelector("#contador-normales").textContent = estado.cantidadNormales;
   document.querySelector("#siguiente-turno").textContent = estado.siguiente
-    ? `${estado.enAtencion ? "Después de cerrar la atención actual" : "Próximo paciente"}: ${estado.siguiente.mascotaNombre} · ${etiquetaAtencion(estado.siguiente)}.`
+    ? `Próximo paciente: ${estado.siguiente.mascotaNombre} · ${etiquetaAtencion(estado.siguiente)}.`
     : "No hay pacientes pendientes.";
-  mostrarOpcionesVeterinarios(veterinarioSiguiente, estado.enAtencion ? null : estado.siguiente, veterinarioSiguiente.value);
-  mostrarOpcionesVeterinarios(veterinarioActual, estado.enAtencion, estado.enAtencion?.veterinarioId);
-  document.querySelector("#ayuda-asignacion").textContent = estado.enAtencion
-    ? "Hay una consulta abierta. Cierra el turno para volver a elegir veterinario y llamar al próximo paciente."
+  mostrarOpcionesVeterinarios(veterinarioSiguiente, estado.siguiente, veterinarioSiguiente.value);
+  document.querySelector("#ayuda-asignacion").textContent = estado.atenciones.some((t) => !t.veterinarioId)
+    ? "Completa la asignación de la consulta antigua antes de llamar al próximo paciente."
     : !estado.siguiente
     ? "Solicita una visita para ver los profesionales compatibles."
-    : estado.siguiente.veterinariosCompatibles.length
-      ? "Se muestran profesionales que ofrecen todos los servicios del próximo paciente."
-      : "No hay un profesional compatible. Registra o actualiza sus servicios en Veterinarios; esta visita conserva su lugar en espera.";
+    : estado.siguiente.veterinariosDisponibles.length
+      ? "Solo aparecen veterinarios libres que ofrecen todos los servicios del próximo paciente."
+      : estado.siguiente.veterinariosCompatibles.length
+        ? "Los veterinarios compatibles están ocupados. Este paciente conserva su lugar hasta que uno termine su consulta."
+        : "No hay un profesional compatible. Registra o actualiza sus servicios en Veterinarios; esta visita conserva su lugar en espera.";
   const actual = document.querySelector("#turno-actual");
   actual.replaceChildren();
-  const paciente = document.createElement("p");
-  paciente.className = "panel-description";
-  paciente.textContent = estado.enAtencion
-    ? `${estado.enAtencion.mascotaNombre} · ${estado.enAtencion.servicio} · Visita #${estado.enAtencion.id} · ${etiquetaAtencion(estado.enAtencion)}`
-    : "Todavía no hay un paciente en atención.";
-  actual.append(paciente);
-  if (estado.enAtencion) {
-    const profesional = document.createElement("p");
-    profesional.className = "panel-description";
-    profesional.textContent = estado.enAtencion.veterinario ? `Veterinario: ${estado.enAtencion.veterinario} · Ocupado hasta cerrar esta consulta.` : "Esta visita anterior aún necesita un veterinario. Asígnalo antes de cerrarla.";
-    actual.append(profesional);
+  if (!estado.atenciones.length) {
+    const vacio = document.createElement('p');
+    vacio.className = 'panel-description';
+    vacio.textContent = 'Todavía no hay pacientes en atención.';
+    actual.append(vacio);
   }
-  if (estado.enAtencion?.motivo) {
-    const motivo = document.createElement("p");
-    motivo.className = "panel-description";
-    motivo.textContent = `Motivo: ${estado.enAtencion.motivo}`;
-    actual.append(motivo);
-  }
+  estado.atenciones.forEach((turno) => actual.append(tarjetaAtencion(turno)));
   document.querySelector("#contador-turnos").textContent = estado.cantidad;
   document.querySelector("#total-turnos").textContent = estado.cantidad;
+}
+function tarjetaAtencion(turno) {
+  const tarjeta = document.createElement('article');
+  tarjeta.className = 'consultation-card';
+  const titulo = document.createElement('h3');
+  titulo.textContent = `${turno.mascotaNombre} · Visita #${turno.id}`;
+  const servicios = document.createElement('p');
+  servicios.textContent = `${turno.servicio} · ${etiquetaAtencion(turno)}`;
+  const profesional = document.createElement('p');
+  profesional.textContent = turno.veterinario ? `Veterinario: ${turno.veterinario} · Ocupado` : 'Consulta antigua sin veterinario: completa su asignación.';
+  tarjeta.append(titulo, servicios, profesional);
+  if (turno.motivo) {
+    const motivo = document.createElement('p');
+    motivo.textContent = `Motivo: ${turno.motivo}`;
+    tarjeta.append(motivo);
+  }
+  const accion = document.createElement('button');
+  accion.className = 'button';
+  accion.type = 'button';
+  if (turno.veterinarioId) {
+    accion.textContent = `Cerrar turno de ${turno.mascotaNombre} · #${turno.id}`;
+    accion.addEventListener('click', () => enviarOperacionTurno('/api/turnos/finalizar', { turnoId: turno.id }, `Consulta de ${turno.mascotaNombre} cerrada. Su veterinario vuelve a estar disponible.`));
+  } else {
+    const etiqueta = document.createElement('label');
+    const selector = document.createElement('select');
+    selector.id = `asignar-visita-${turno.id}`;
+    etiqueta.htmlFor = selector.id;
+    etiqueta.textContent = `Veterinario para la visita #${turno.id}`;
+    mostrarOpcionesVeterinarios(selector, turno);
+    selector.dataset.sinOpciones = String(!turno.veterinariosDisponibles.length);
+    accion.dataset.sinOpciones = selector.dataset.sinOpciones;
+    tarjeta.append(etiqueta, selector);
+    accion.textContent = 'Asignar veterinario';
+    accion.addEventListener('click', () => enviarOperacionTurno('/api/turnos/asignar', { turnoId: turno.id, veterinarioId: Number(selector.value) }, 'Veterinario asignado a la consulta antigua.'));
+  }
+  tarjeta.append(accion);
+  return tarjeta;
 }
 function mostrarOpcionesVeterinarios(selector, turno, seleccionado) {
   selector.replaceChildren();
   const opciones = turno?.veterinariosDisponibles ?? [];
   if (!opciones.length) {
-    selector.append(opcionTurno("", turno ? "Sin profesional compatible" : "Sin paciente"));
+    selector.append(opcionTurno("", turno ? "Sin veterinario disponible" : "Sin paciente"));
     return;
   }
   opciones.forEach((v) => selector.append(opcionTurno(v.id, `${v.nombre} · #${v.id}`)));
@@ -204,7 +226,7 @@ async function cargarTurnos() {
   try {
     const [mascotas, estado] = await consultarTurnos();
     mostrarEstadoCola(mascotas, estado);
-    avisoTurnos.textContent = "Primero las urgencias por prioridad; en empates se respeta la llegada. Cierra la atención actual para llamar al siguiente.";
+    avisoTurnos.textContent = "Primero las urgencias por prioridad; en empates se respeta la llegada. Cada veterinario libre puede atender a un paciente diferente.";
   } catch {
     estadoCola = null;
     avisoTurnos.textContent = "No se pudieron cargar los turnos. Comprueba el servidor y pulsa Actualizar turnos.";
@@ -270,7 +292,6 @@ mascotaTurno.addEventListener("change", prepararVisitaSeleccionada);
 opcionesServicios.addEventListener("change", actualizarBotonesTurnos);
 tipoTurno.addEventListener("change", actualizarBotonesTurnos);
 veterinarioSiguiente.addEventListener("change", actualizarBotonesTurnos);
-veterinarioActual.addEventListener("change", actualizarBotonesTurnos);
 formularioTurno.addEventListener("submit", (evento) => {
   evento.preventDefault();
   if (botonTurno.disabled) return;
@@ -286,10 +307,6 @@ formularioTurno.addEventListener("submit", (evento) => {
 botonLlamar.addEventListener("click", () => enviarOperacionTurno("/api/turnos/llamar", {
   turnoId: estadoCola.siguiente?.id, veterinarioId: Number(veterinarioSiguiente.value),
 }, "El siguiente paciente pasó a atención con su veterinario asignado."));
-botonAsignar.addEventListener("click", () => enviarOperacionTurno("/api/turnos/asignar", {
-  turnoId: estadoCola.enAtencion?.id, veterinarioId: Number(veterinarioActual.value),
-}, "Veterinario asignado a la visita actual."));
-botonCerrar.addEventListener("click", () => enviarOperacionTurno("/api/turnos/finalizar", {}, "Visita cerrada. Puedes llamar al siguiente paciente."));
 botonActualizarTurnos.addEventListener("click", cargarTurnos);
 window.addEventListener("hashchange", () => { if (location.hash === "#turnos") cargarTurnos(); });
 cargarTurnos();
