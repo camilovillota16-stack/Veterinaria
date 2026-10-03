@@ -4,7 +4,19 @@ Proyecto académico en JavaScript para registrar mascotas, gestionar turnos norm
 
 ## Estado del proyecto
 
-Planificación inicial. La aplicación todavía no está implementada ni publicada.
+Primera interfaz funcional: navegación entre Inicio y Mascotas, registro de mascotas con datos del propietario, validación y contadores. Los registros se conservan solo en memoria y se pierden al recargar. Todavía no hay API, base de datos ni estructuras propias implementadas. La aplicación no está publicada.
+
+## Ejecutar localmente
+
+Requiere Node.js 20 o superior. En la terminal, dentro de la carpeta del proyecto:
+
+```powershell
+npm.cmd start
+```
+
+Abre http://localhost:3000. Detén el servidor con `Ctrl+C`. Esta etapa usa solo módulos incluidos en Node.js y no necesita instalar dependencias externas.
+
+La explicación del código y los ejercicios están en [docs/LECCION_01.md](docs/LECCION_01.md).
 
 ## Integrante
 
