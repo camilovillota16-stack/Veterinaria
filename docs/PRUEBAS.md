@@ -11,6 +11,8 @@ Comprobaciones realizadas el 3 de octubre de 2026 con Node.js 24.14.1 y el naveg
 | Nombre compuesto solo por espacios | Mensaje de validación; el registro no se añade. |
 | Teléfono compuesto por letras | Mensaje de validación; el registro no se añade. |
 | Enviar un formulario válido con Enter | Mascota registrada y formulario reiniciado. |
+| Registrar una raza con espacios en los extremos, como `   Siamés   ` | La tarjeta muestra `Raza: Siamés`. |
+| Registrar una mascota sin raza | Registro aceptado; la tarjeta muestra `Raza: Sin especificar`. |
 | Navegación entre Inicio y Mascotas | Pantalla y título actualizados sin perder los registros. |
 | Enlace de teclado Ir al contenido desde Mascotas | Mantiene la pantalla Mascotas y mueve el foco al contenido. |
 | Recargar la página | Registros borrados y estado vacío mostrado, como corresponde a la versión en memoria. |

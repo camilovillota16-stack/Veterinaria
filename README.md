@@ -4,7 +4,7 @@ Proyecto académico en JavaScript para registrar mascotas, gestionar turnos norm
 
 ## Estado del proyecto
 
-Primera interfaz funcional: navegación entre Inicio y Mascotas, registro de mascotas con datos del propietario, validación y contadores. Los registros se conservan solo en memoria y se pierden al recargar. Todavía no hay API, base de datos ni estructuras propias implementadas. La aplicación no está publicada.
+Primera interfaz funcional: navegación entre Inicio y Mascotas, registro de mascotas con raza opcional y datos del propietario, validación y contadores. Si la raza está vacía, la tarjeta muestra «Sin especificar». Los registros se conservan solo en memoria y se pierden al recargar. Todavía no hay API, base de datos ni estructuras propias implementadas. La aplicación no está publicada.
 
 ## Ejecutar localmente
 
