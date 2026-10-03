@@ -86,3 +86,13 @@ Se comprobó el navegador con 153 mascotas sintéticas en una base independiente
 | Vista móvil de 360 por 800 | Ancho disponible y del contenido de 345 píxeles, sin desbordamiento horizontal. |
 
 La cola y el trie están implementados: dos de las cinco estructuras. Quedan pendientes historial, urgencias, grafo y publicación. Los registros sintéticos no se añadieron a la base principal ni al repositorio.
+
+## Clase 5 Heap de urgencias
+
+Las 30 pruebas automatizadas pasaron el 3 de octubre de 2026. Las ocho nuevas cubren inserciones y extracciones intercaladas del heap, vacío y reutilización, 500 entradas comparadas con el orden esperado, una vista que no consume el heap, urgencias antes que normales, desempate por llegada, clasificación inválida, reclasificación sin perder la llegada, atención actual protegida, edición de servicios sin perder prioridad, reinicio, migración de urgentes antiguos, reversión ante fallos en clasificación o llamada y flujo HTTP.
+
+La prueba del navegador utilizó una base independiente en el puerto 3001. Se prepararon Luna normal, Max urgente de prioridad 2 y Rocky urgente de prioridad 3. Desde el formulario se registró Nala urgente de prioridad 3. La espera mostró Rocky, Nala, Max, Luna. Al llamar al siguiente, Rocky pasó a atención y Nala quedó como próxima, seguida por Max y Luna. La recarga conservó estados y prioridades; al seleccionar a Rocky, los campos de tipo y prioridad estaban bloqueados y los servicios seguían editables.
+
+Se revisó el escritorio mediante captura completa y el ancho móvil de 360 por 800: contenido y ancho disponible de 345 píxeles, sin desbordamiento horizontal. Se reinició el servidor principal con la migración de prioridad; la prueba no añadió mascotas ni turnos sintéticos a su base.
+
+Hay tres estructuras implementadas: cola, trie y heap. Quedan pendientes el grafo, la lista del historial y la publicación.

@@ -4,6 +4,7 @@ import { dirname, resolve } from "node:path";
 import { validarMascota, ErrorSolicitud } from "../api/validacion.mjs";
 import { Cola } from "../estructuras/cola.mjs";
 import { Trie, normalizarBusqueda } from "../estructuras/trie.mjs";
+import { HeapPrioridad } from "../estructuras/heap.mjs";
 
 export function crearAlmacen(ruta) {
   if (ruta !== ":memory:") mkdirSync(dirname(resolve(ruta)), { recursive: true });
@@ -53,6 +54,10 @@ export function crearAlmacen(ruta) {
     if (!conexion.prepare("PRAGMA table_info(turnos)").all().some((columna) => columna.name === "motivo")) {
       conexion.exec("ALTER TABLE turnos ADD COLUMN motivo TEXT NOT NULL DEFAULT ''");
     }
+    if (!conexion.prepare("PRAGMA table_info(turnos)").all().some((columna) => columna.name === "prioridad")) {
+      conexion.exec("ALTER TABLE turnos ADD COLUMN prioridad INTEGER NOT NULL DEFAULT 0 CHECK (prioridad BETWEEN 0 AND 3)");
+      conexion.exec("UPDATE turnos SET prioridad = 1 WHERE tipo = 'urgente'");
+    }
     conexion.exec(`
       CREATE TABLE IF NOT EXISTS turno_servicios (
         turno_id INTEGER NOT NULL REFERENCES turnos(id),
@@ -92,22 +97,24 @@ export function crearAlmacen(ruta) {
   const consultaTurnos = `
     SELECT t.id, t.mascota_id AS mascotaId, m.nombre AS mascotaNombre,
            m.especie, p.nombre AS propietario, t.servicio_id AS servicioId,
-           s.nombre AS servicio, t.motivo, t.tipo, t.estado, t.creado_en AS creadoEn
+           s.nombre AS servicio, t.motivo, t.tipo, t.prioridad, t.estado, t.creado_en AS creadoEn
     FROM turnos AS t
     JOIN mascotas AS m ON m.id = t.mascota_id
     JOIN propietarios AS p ON p.id = m.propietario_id
     JOIN servicios AS s ON s.id = t.servicio_id
   `;
   const pendientes = conexion.prepare(`${consultaTurnos} WHERE t.estado = 'pendiente' AND t.tipo = 'normal' ORDER BY t.id`);
+  const urgentesPendientes = conexion.prepare(`${consultaTurnos} WHERE t.estado = 'pendiente' AND t.tipo = 'urgente' ORDER BY t.id`);
   const enAtencion = conexion.prepare(`${consultaTurnos} WHERE t.estado = 'en_atencion'`);
   const buscarTurno = conexion.prepare(`${consultaTurnos} WHERE t.id = ?`);
   const servicios = conexion.prepare("SELECT id, nombre FROM servicios ORDER BY id");
   const buscarServicio = conexion.prepare("SELECT id FROM servicios WHERE id = ?");
   const turnoActivo = conexion.prepare("SELECT id FROM turnos WHERE mascota_id = ? AND estado IN ('pendiente', 'en_atencion')");
-  const insertarTurno = conexion.prepare("INSERT INTO turnos (mascota_id, servicio_id) VALUES (?, ?)");
+  const insertarTurno = conexion.prepare("INSERT INTO turnos (mascota_id, servicio_id, tipo, prioridad) VALUES (?, ?, ?, ?)");
   const insertarServicioTurno = conexion.prepare("INSERT INTO turno_servicios (turno_id, servicio_id) VALUES (?, ?)");
   const eliminarServiciosTurno = conexion.prepare("DELETE FROM turno_servicios WHERE turno_id = ?");
   const actualizarVisita = conexion.prepare("UPDATE turnos SET servicio_id = ?, motivo = ? WHERE id = ?");
+  const actualizarClasificacion = conexion.prepare("UPDATE turnos SET tipo = ?, prioridad = ? WHERE id = ?");
   const consultarServiciosTurno = conexion.prepare(`
     SELECT s.id, s.nombre FROM turno_servicios ts JOIN servicios s ON s.id = ts.servicio_id
     JOIN turnos t ON t.id = ts.turno_id WHERE ts.turno_id = ?
@@ -152,13 +159,38 @@ export function crearAlmacen(ruta) {
 
   function estadoTurnos() {
     const cola = reconstruirCola();
+    const heap = reconstruirHeap();
+    const normales = cola.aArray();
+    const urgentes = heap.enOrden();
     return {
-      pendientes: cola.aArray(),
-      siguiente: cola.verPrimero(),
-      cantidad: cola.tamano,
+      pendientes: [...urgentes, ...normales],
+      normales,
+      urgentes,
+      siguiente: heap.verPrimero() ?? cola.verPrimero(),
+      cantidad: cola.tamano + heap.tamano,
+      cantidadNormales: cola.tamano,
+      cantidadUrgentes: heap.tamano,
       enAtencion: completarTurno(enAtencion.get()),
       servicios: servicios.all(),
     };
+  }
+
+  function reconstruirHeap() {
+    const heap = new HeapPrioridad();
+    urgentesPendientes.all().forEach((turno) => heap.insertar(completarTurno(turno)));
+    return heap;
+  }
+
+  function validarClasificacion(datos, actual = null) {
+    const tipo = datos.tipo === undefined ? (actual?.tipo ?? "normal") : datos.tipo;
+    const prioridad = datos.prioridad === undefined
+      ? (actual?.tipo === tipo ? actual.prioridad : tipo === "urgente" ? 1 : 0)
+      : datos.prioridad;
+    if (!["normal", "urgente"].includes(tipo) || !Number.isSafeInteger(prioridad)
+      || (tipo === "normal" ? prioridad !== 0 : prioridad < 1 || prioridad > 3)) {
+      throw new ErrorSolicitud("Selecciona atención normal o urgente; las urgencias requieren una prioridad entre 1 y 3.");
+    }
+    return { tipo, prioridad };
   }
 
   function validarVisita(datos) {
@@ -202,6 +234,7 @@ export function crearAlmacen(ruta) {
 
   function registrarTurno(datos) {
     const visita = validarVisita(datos);
+    const clasificacion = validarClasificacion(datos);
     if (!datos || typeof datos !== "object" || Array.isArray(datos)
       || !Number.isSafeInteger(datos.mascotaId) || datos.mascotaId < 1) {
       throw new ErrorSolicitud("Selecciona una mascota y un servicio válidos.");
@@ -214,11 +247,16 @@ export function crearAlmacen(ruta) {
         throw new ErrorSolicitud("Esta mascota ya tiene una visita activa. Actualiza sus servicios en ese turno.", 409);
       }
       const cola = reconstruirCola();
-      const resultado = insertarTurno.run(datos.mascotaId, visita.serviciosIds[0]);
+      const heap = reconstruirHeap();
+      const resultado = insertarTurno.run(datos.mascotaId, visita.serviciosIds[0], clasificacion.tipo, clasificacion.prioridad);
       guardarServicios(resultado.lastInsertRowid, visita);
       const turno = completarTurno(buscarTurno.get(resultado.lastInsertRowid));
+      if (turno.tipo === "urgente") {
+        heap.insertar(turno);
+        return { turno, posicion: heap.enOrden().findIndex((pendiente) => pendiente.id === turno.id) + 1 };
+      }
       cola.encolar(turno);
-      return { turno, posicion: cola.tamano };
+      return { turno, posicion: heap.tamano + cola.tamano };
     });
   }
 
@@ -231,7 +269,12 @@ export function crearAlmacen(ruta) {
       const turno = buscarTurno.get(datos.turnoId);
       if (!turno) throw new ErrorSolicitud("El turno no existe.", 404);
       if (turno.estado === "finalizado") throw new ErrorSolicitud("Esta visita ya terminó. Solicita un nuevo turno.", 409);
+      const clasificacion = validarClasificacion(datos, turno);
+      if (turno.estado === "en_atencion" && (turno.tipo !== clasificacion.tipo || turno.prioridad !== clasificacion.prioridad)) {
+        throw new ErrorSolicitud("La prioridad solo puede cambiar mientras la visita está en espera.", 409);
+      }
       guardarServicios(turno.id, visita);
+      actualizarClasificacion.run(clasificacion.tipo, clasificacion.prioridad, turno.id);
       return completarTurno(buscarTurno.get(turno.id));
     });
   }
@@ -242,7 +285,8 @@ export function crearAlmacen(ruta) {
         throw new ErrorSolicitud("Cierra el turno en atención antes de llamar otro paciente.", 409);
       }
       const cola = reconstruirCola();
-      const siguiente = cola.desencolar();
+      const heap = reconstruirHeap();
+      const siguiente = heap.estaVacio() ? cola.desencolar() : heap.extraer();
       if (!siguiente) throw new ErrorSolicitud("No hay turnos pendientes.", 409);
       llamarTurno.run(siguiente.id);
       return completarTurno(buscarTurno.get(siguiente.id));

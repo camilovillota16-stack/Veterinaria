@@ -83,7 +83,7 @@
     <section id="turnos" class="page" aria-labelledby="titulo-turnos" hidden>
       <p class="eyebrow">ATENCIÓN EN ORDEN</p>
       <h1 id="titulo-turnos">Turnos de atención</h1>
-      <p class="intro">Los turnos normales se atienden por orden de llegada.</p>
+      <p class="intro">Primero las urgencias por prioridad; después los turnos normales por orden de llegada.</p>
       <p id="estado-turnos" class="session-note" role="status">Cargando turnos…</p>
       <button id="recargar-turnos" class="button retry-button" type="button">Actualizar turnos</button>
       <div class="registry-layout">
@@ -98,6 +98,12 @@
             <label for="mascota-turno">Mascota</label>
             <select id="mascota-turno" name="mascotaId" required><option value="">Cargando mascotas…</option></select>
             <p id="ayuda-visita" class="visit-note" role="status">Selecciona una mascota para solicitar o actualizar su visita.</p>
+            <label for="tipo-turno">Tipo de atención</label>
+            <select id="tipo-turno" name="tipo"><option value="normal">Normal</option><option value="urgente">Urgente</option></select>
+            <div id="grupo-prioridad" hidden>
+              <label for="prioridad-turno">Prioridad de la urgencia</label>
+              <select id="prioridad-turno" name="prioridad" disabled><option value="1">Baja · 1</option><option value="2">Media · 2</option><option value="3">Alta · 3</option></select>
+            </div>
             <fieldset id="servicios-turno"><legend>Servicios de esta visita</legend><small>Marca uno o varios servicios.</small><div id="opciones-servicios"></div></fieldset>
             <label for="motivo-turno">Motivo de la consulta (opcional)</label>
             <textarea id="motivo-turno" name="motivo" maxlength="500" rows="3" placeholder="Ej. Le duele la cola"></textarea>
@@ -111,6 +117,10 @@
         </section>
         <section class="panel" aria-labelledby="titulo-cola">
           <div class="list-heading"><h2 id="titulo-cola">En espera</h2><span id="contador-turnos" class="count-badge">0</span></div>
+          <p id="siguiente-turno" class="visit-note next-turn" role="status">Consultando próximo paciente…</p>
+          <div class="queue-heading"><h3>Urgencias</h3><span id="contador-urgencias" class="count-badge">0</span></div>
+          <div id="lista-urgencias" class="patient-list" aria-live="polite"><p class="empty-state">Cargando urgencias…</p></div>
+          <div class="queue-heading"><h3>Turnos normales</h3><span id="contador-normales" class="count-badge">0</span></div>
           <div id="lista-turnos" class="patient-list" aria-live="polite"><p class="empty-state">Cargando turnos…</p></div>
           <button id="llamar-siguiente" class="button submit-button" type="button" disabled>Llamar siguiente <span aria-hidden="true">→</span></button>
         </section>

@@ -67,4 +67,4 @@ El selector muestra hasta 30 coincidencias (más la mascota seleccionada si tamb
 - `estructuras/trie.mjs`: nodos, inserción y búsqueda por prefijo.
 - `tests/visitas-busqueda.test.mjs`: búsquedas, visitas múltiples, migración y reversión ante fallos.
 
-Tenemos dos de las cinco estructuras: cola y trie. La lista del historial, el heap de urgencias y el grafo quedan pendientes.
+En esta clase completamos dos de las cinco estructuras: cola y trie. La clase 5 incorpora el heap de urgencias. La lista del historial y el grafo se implementarán después.
