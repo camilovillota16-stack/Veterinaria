@@ -46,8 +46,6 @@ export function crearAlmacen(ruta) {
     ) STRICT;
     CREATE UNIQUE INDEX IF NOT EXISTS mascota_con_turno_activo
       ON turnos(mascota_id) WHERE estado IN ('pendiente', 'en_atencion');
-    CREATE UNIQUE INDEX IF NOT EXISTS un_turno_en_atencion
-      ON turnos(estado) WHERE estado = 'en_atencion';
   `);
   // Migración compatible con los turnos existentes: conservan su primer servicio.
   conexion.exec("BEGIN IMMEDIATE");
@@ -67,6 +65,11 @@ export function crearAlmacen(ruta) {
     if (!conexion.prepare("PRAGMA table_info(turnos)").all().some((columna) => columna.name === "veterinario_id")) {
       conexion.exec("ALTER TABLE turnos ADD COLUMN veterinario_id INTEGER REFERENCES veterinarios(id)");
     }
+    conexion.exec(`
+      DROP INDEX IF EXISTS un_turno_en_atencion;
+      CREATE UNIQUE INDEX IF NOT EXISTS veterinario_con_consulta_abierta
+        ON turnos(veterinario_id) WHERE estado = 'en_atencion' AND veterinario_id IS NOT NULL;
+    `);
     if (!conexion.prepare("PRAGMA table_info(turnos)").all().some((columna) => columna.name === "motivo")) {
       conexion.exec("ALTER TABLE turnos ADD COLUMN motivo TEXT NOT NULL DEFAULT ''");
     }
@@ -123,7 +126,7 @@ export function crearAlmacen(ruta) {
   `;
   const pendientes = conexion.prepare(`${consultaTurnos} WHERE t.estado = 'pendiente' AND t.tipo = 'normal' ORDER BY t.id`);
   const urgentesPendientes = conexion.prepare(`${consultaTurnos} WHERE t.estado = 'pendiente' AND t.tipo = 'urgente' ORDER BY t.id`);
-  const enAtencion = conexion.prepare(`${consultaTurnos} WHERE t.estado = 'en_atencion'`);
+  const enAtencion = conexion.prepare(`${consultaTurnos} WHERE t.estado = 'en_atencion' ORDER BY t.id`);
   const buscarTurno = conexion.prepare(`${consultaTurnos} WHERE t.id = ?`);
   const servicios = conexion.prepare("SELECT id, nombre FROM servicios ORDER BY id");
   const buscarServicio = conexion.prepare("SELECT id FROM servicios WHERE id = ?");
@@ -166,9 +169,9 @@ export function crearAlmacen(ruta) {
   }
 
   function listarVeterinarios() {
-    const actual = enAtencion.get();
+    const ocupados = new Set(enAtencion.all().map((t) => t.veterinarioId));
     return consultarVeterinarios.all().map((v) => ({ ...v, servicios: serviciosVeterinario.all(v.id),
-      ocupado: actual?.veterinarioId === v.id }));
+      ocupado: ocupados.has(v.id) }));
   }
 
   function guardarVeterinario(datos, editar = false) {
@@ -185,7 +188,7 @@ export function crearAlmacen(ruta) {
       const repetido = buscarNombreVeterinario.get(clave);
       if (repetido && (!editar || repetido.id !== datos.veterinarioId)) throw new ErrorSolicitud("Ya hay un veterinario registrado con ese nombre.", 409);
       if (visita.serviciosIds.some((id) => !buscarServicio.get(id))) throw new ErrorSolicitud("Uno de los servicios no existe.", 404);
-      const actual = enAtencion.get();
+      const actual = enAtencion.all().find((t) => t.veterinarioId === datos.veterinarioId);
       if (editar && actual?.veterinarioId === datos.veterinarioId
         && consultarServiciosTurno.all(actual.id).some((s) => !visita.serviciosIds.includes(s.id))) {
         throw new ErrorSolicitud("No puedes quitar un servicio que está atendiendo. Espera a que termine la consulta.", 409);
@@ -224,9 +227,9 @@ export function crearAlmacen(ruta) {
     if (!turno) return null;
     const listaServicios = consultarServiciosTurno.all(turno.id);
     const veterinariosCompatibles = compatibles(listaServicios.map((s) => s.id), grafo);
-    const ocupado = enAtencion.get()?.veterinarioId;
+    const ocupados = new Set(enAtencion.all().map((t) => t.veterinarioId));
     return { ...turno, servicios: listaServicios, servicio: listaServicios.map((s) => s.nombre).join(" · "),
-      veterinariosCompatibles, veterinariosDisponibles: veterinariosCompatibles.filter((v) => v.id !== ocupado) };
+      veterinariosCompatibles, veterinariosDisponibles: veterinariosCompatibles.filter((v) => !ocupados.has(v.id)) };
   }
 
   function reconstruirCola(grafo = reconstruirGrafo()) {
@@ -242,6 +245,7 @@ export function crearAlmacen(ruta) {
     const heap = reconstruirHeap(grafo);
     const normales = cola.aArray();
     const urgentes = heap.enOrden();
+    const atenciones = enAtencion.all().map((turno) => completarTurno(turno, grafo));
     return {
       pendientes: [...urgentes, ...normales],
       normales,
@@ -250,7 +254,9 @@ export function crearAlmacen(ruta) {
       cantidad: cola.tamano + heap.tamano,
       cantidadNormales: cola.tamano,
       cantidadUrgentes: heap.tamano,
-      enAtencion: completarTurno(enAtencion.get(), grafo),
+      atenciones,
+      // Compatibilidad con clientes anteriores: solo el primer paciente activo.
+      enAtencion: atenciones[0] ?? null,
       servicios: servicios.all(),
     };
   }
@@ -363,21 +369,23 @@ export function crearAlmacen(ruta) {
   }
 
   function elegirVeterinario(turno, datos) {
-    const opciones = turno.veterinariosCompatibles;
+    const opciones = turno.veterinariosDisponibles;
     if (datos.veterinarioId !== undefined && (!Number.isSafeInteger(datos.veterinarioId) || datos.veterinarioId < 1)) {
       throw new ErrorSolicitud("Selecciona un veterinario válido.");
     }
-    if (!opciones.length) throw new ErrorSolicitud("No hay un veterinario que ofrezca todos los servicios de esta visita. Regístralo en Veterinarios; el turno sigue en espera.", 409);
+    if (!opciones.length) throw new ErrorSolicitud(turno.veterinariosCompatibles.length
+      ? "Los veterinarios compatibles están ocupados. Espera a que termine una consulta; el turno sigue en espera."
+      : "No hay un veterinario que ofrezca todos los servicios de esta visita. Regístralo en Veterinarios; el turno sigue en espera.", 409);
     const elegido = datos.veterinarioId === undefined ? opciones[0] : opciones.find((v) => v.id === datos.veterinarioId);
-    if (!elegido) throw new ErrorSolicitud("Ese veterinario no ofrece todos los servicios de la visita.", 409);
+    if (!elegido) throw new ErrorSolicitud("Ese veterinario está ocupado o no ofrece todos los servicios de la visita.", 409);
     return elegido;
   }
 
   function llamarSiguiente(datos = {}) {
     if (!datos || typeof datos !== "object" || Array.isArray(datos)) throw new ErrorSolicitud("Envía los datos de asignación.");
     return enTransaccion(() => {
-      if (enAtencion.get()) {
-        throw new ErrorSolicitud("Cierra el turno en atención antes de llamar otro paciente.", 409);
+      if (enAtencion.all().some((t) => !t.veterinarioId)) {
+        throw new ErrorSolicitud("Asigna un veterinario a la consulta antigua antes de llamar otro paciente.", 409);
       }
       const cola = reconstruirCola();
       const heap = reconstruirHeap();
@@ -395,8 +403,8 @@ export function crearAlmacen(ruta) {
       throw new ErrorSolicitud("Selecciona una visita válida.");
     }
     return enTransaccion(() => {
-      const actual = completarTurno(enAtencion.get());
-      if (!actual || actual.id !== datos.turnoId) throw new ErrorSolicitud("La visita indicada no está en atención. Actualiza los turnos.", 409);
+      const actual = completarTurno(buscarTurno.get(datos.turnoId));
+      if (!actual || actual.estado !== 'en_atencion') throw new ErrorSolicitud("La visita indicada no está en atención. Actualiza los turnos.", 409);
       if (actual.veterinarioId) throw new ErrorSolicitud("La consulta ya tiene un veterinario asignado. No puedes cambiarlo durante la atención.", 409);
       const veterinario = elegirVeterinario(actual, datos);
       asignarTurno.run(veterinario.id, actual.id);
@@ -404,10 +412,17 @@ export function crearAlmacen(ruta) {
     });
   }
 
-  function finalizarTurno() {
+  function finalizarTurno(datos = {}) {
+    if (!datos || typeof datos !== 'object' || Array.isArray(datos)
+      || (datos.turnoId !== undefined && (!Number.isSafeInteger(datos.turnoId) || datos.turnoId < 1))) {
+      throw new ErrorSolicitud("Selecciona una visita válida para cerrar.");
+    }
     return enTransaccion(() => {
-      const actual = enAtencion.get();
+      const abiertas = enAtencion.all();
+      if (datos.turnoId === undefined && abiertas.length > 1) throw new ErrorSolicitud("Selecciona qué consulta quieres cerrar mediante turnoId.", 409);
+      const actual = datos.turnoId === undefined ? abiertas[0] : buscarTurno.get(datos.turnoId);
       if (!actual) throw new ErrorSolicitud("No hay un turno en atención.", 409);
+      if (actual.estado !== 'en_atencion') throw new ErrorSolicitud("La visita indicada no está en atención. Actualiza los turnos.", 409);
       if (!actual.veterinarioId) throw new ErrorSolicitud("Asigna un veterinario a esta visita antes de cerrarla.", 409);
       cerrarTurno.run(actual.id);
       return completarTurno(buscarTurno.get(actual.id));

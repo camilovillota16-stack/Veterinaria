@@ -32,7 +32,17 @@ La carga también registra Demo Ana Veterinaria (Consulta general y Control) y D
 9. Al llegar a la Luna con Consulta general y Vacunación, comprobar que solo se ofrece Bruno: Ana no ofrece vacunación.
 10. Recargar mientras está en atención para mostrar que la asignación se conserva. Después cerrar su turno.
 
-Los turnos se crean durante la práctica; la carga de mascotas no crea turnos. Si ya hay un paciente activo, termina su visita antes de iniciar el recorrido.
+Los turnos se crean durante la práctica; la carga de mascotas no crea turnos. Para observar el orden desde una espera limpia, termina las consultas previas antes de iniciar el recorrido. Durante el recorrido puedes llamar al próximo con un veterinario libre sin cerrar las otras consultas.
+
+## Varios profesionales atendiendo
+
+1. Solicitar dos visitas normales con Consulta general, primero Henry y después una Luna.
+2. Llamar a Henry con Ana. Ana queda ocupada; Bruno continúa disponible para Luna.
+3. Llamar a Luna con Bruno sin cerrar la consulta de Henry. Se muestran ambas tarjetas.
+4. Cerrar la consulta de Luna: Henry sigue con Ana y Bruno vuelve a estar disponible.
+5. Registrar un tercer profesional desde Veterinarios mientras Ana atiende. Al volver a Turnos aparece como disponible si ofrece los servicios del próximo paciente.
+
+Las llamadas respetan la llegada y prioridad; los cierres pueden ocurrir en otro orden porque las consultas duran tiempos diferentes.
 
 ## Lo que falta para la presentación final
 
