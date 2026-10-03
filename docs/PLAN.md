@@ -47,19 +47,21 @@ Los mensajes se ajustarán al cambio real. Si un avance necesita varias etapas i
 - Veterinario: identificador y nombre.
 - Servicio: identificador y nombre.
 - Relación entre veterinario y servicio: identificadores de ambos.
-- Turno: identificador, mascota, servicio, tipo, prioridad, orden de llegada y estado.
+- Turno o visita: identificador, mascota, motivo opcional, tipo, prioridad, orden de llegada y estado.
+- Servicio de una visita: identificadores del turno y del servicio; una visita admite varios servicios.
 - Consulta: identificador, turno, veterinario, fecha y observaciones.
 
 ## Reglas de funcionamiento
 
 - Una mascota pertenece a un propietario registrado.
-- Un turno solicita un servicio existente.
+- Un turno solicita uno o varios servicios existentes, sin repetirlos. Una mascota solo puede tener una visita activa.
+- Cambiar los servicios o el motivo de una visita activa conserva su estado y orden de llegada; una visita finalizada ya no se modifica.
 - Un turno pendiente se encuentra en la cola normal o en el heap de urgencias, según su tipo.
 - Las urgencias se atienden antes que los turnos normales. A igual prioridad se conserva el orden de llegada.
-- Un veterinario solo puede asignarse si el grafo lo conecta con el servicio del turno.
+- La asignación de veterinarios debe cubrir los servicios de la visita mediante conexiones del grafo (pendiente).
 - Finalizar una atención guarda la consulta y cambia el estado del turno en una misma transacción de base de datos.
 - Si falla la persistencia, se conserva o restaura la coherencia de las estructuras en memoria.
-- La búsqueda permite distinguir mascotas con el mismo nombre mediante su propietario o identificador.
+- La búsqueda por prefijo del nombre o propietario permite distinguir mascotas con el mismo nombre mediante su propietario o identificador.
 
 ## Comprobaciones antes de los commits funcionales
 

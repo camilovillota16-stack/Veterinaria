@@ -9,7 +9,7 @@
 * { box-sizing: border-box; }
 body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: var(--canvas); color: var(--ink); }
 a { color: inherit; }
-button, input, select { font: inherit; }
+button, input, select, textarea { font: inherit; }
 [hidden] { display: none !important; }
 :focus-visible { outline: 3px solid #d99235; outline-offset: 4px; }
 .skip-link { position: fixed; top: -80px; left: 20px; z-index: 5; padding: 12px; background: white; }
@@ -63,7 +63,16 @@ h2 { font-size: 19px; font-weight: 650; letter-spacing: -.4px; margin: 0; }
 .panel-description { color: var(--muted); font-size: 12px; margin: 10px 0 25px; }
 form { display: flex; flex-direction: column; }
 label { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
-input, select { width: 100%; background: #fcfdfb; color: var(--ink); border: 1px solid #ccd8ce; border-radius: 7px; padding: 12px; font-size: 13px; margin-bottom: 21px; }
+input, select, textarea { width: 100%; background: #fcfdfb; color: var(--ink); border: 1px solid #ccd8ce; border-radius: 7px; padding: 12px; font-size: 13px; margin-bottom: 21px; }
+textarea { resize: vertical; }
+fieldset { border: 1px solid var(--border); border-radius: 8px; margin: 0 0 22px; padding: 16px; min-width: 0; }
+legend { font-size: 12px; font-weight: 600; padding: 0 6px; }
+.service-option { display: flex; gap: 10px; align-items: center; margin: 14px 0 0; padding: 8px 0; cursor: pointer; }
+.service-option input { width: 18px; height: 18px; margin: 0; flex-shrink: 0; accent-color: var(--green); }
+.visit-note { font-size: 12px; line-height: 1.7; background: #edf1e5; border-radius: 7px; padding: 12px; margin: -8px 0 22px; }
+#buscar-mascota-turno { margin-bottom: 8px; }
+#resultados-busqueda-turno { margin-bottom: 18px; }
+.submit-button #texto-boton-turno { font-size: 13px; line-height: 1.5; }
 input::placeholder { color: #84918b; }
 #telefono { margin-bottom: 8px; }
 form small { color: var(--muted); font-size: 11px; line-height: 1.6; }

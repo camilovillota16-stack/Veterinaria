@@ -44,6 +44,7 @@ async function leerJson(solicitud) {
 export function crearServidor(almacen) {
   const rutasTurnos = new Map([
     ["/api/turnos", almacen.registrarTurno],
+    ["/api/turnos/actualizar", almacen.actualizarTurno],
     ["/api/turnos/llamar", almacen.llamarSiguiente],
     ["/api/turnos/finalizar", almacen.finalizarTurno],
   ]);
@@ -57,7 +58,8 @@ export function crearServidor(almacen) {
       }
       if (ruta === "/api/mascotas") {
         if (solicitud.method === "GET") {
-          responderJson(respuesta, 200, almacen.listarMascotas());
+          const consulta = new URL(solicitud.url, "http://localhost").searchParams.get("q");
+          responderJson(respuesta, 200, consulta === null ? almacen.listarMascotas() : almacen.buscarMascotas(consulta));
         } else if (solicitud.method === "POST") {
           const origen = solicitud.headers.origin;
           if (origen && origen !== `http://${solicitud.headers.host}`) {

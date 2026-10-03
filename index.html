@@ -89,13 +89,19 @@
       <div class="registry-layout">
         <section class="panel" aria-labelledby="titulo-nuevo-turno">
           <h2 id="titulo-nuevo-turno">Solicitar turno</h2>
-          <p class="panel-description">Selecciona una mascota registrada y el servicio que necesita.</p>
+          <p class="panel-description">Una visita puede incluir varios servicios. Si ya tiene turno, puedes actualizarlo aquí.</p>
           <form id="formulario-turno">
+            <label for="buscar-mascota-turno">Buscar mascota o propietario</label>
+            <input id="buscar-mascota-turno" type="search" maxlength="100" autocomplete="off" placeholder="Ej. Henry o Villota" aria-describedby="ayuda-busqueda-turno">
+            <small id="ayuda-busqueda-turno">Escribe el inicio del nombre o apellido. La búsqueda ignora tildes y mayúsculas.</small>
+            <p id="resultados-busqueda-turno" class="form-message" role="status"></p>
             <label for="mascota-turno">Mascota</label>
             <select id="mascota-turno" name="mascotaId" required><option value="">Cargando mascotas…</option></select>
-            <label for="servicio-turno">Servicio</label>
-            <select id="servicio-turno" name="servicioId" required><option value="">Cargando servicios…</option></select>
-            <button class="button submit-button" type="submit" disabled>Añadir a la cola <span aria-hidden="true">+</span></button>
+            <p id="ayuda-visita" class="visit-note" role="status">Selecciona una mascota para solicitar o actualizar su visita.</p>
+            <fieldset id="servicios-turno"><legend>Servicios de esta visita</legend><small>Marca uno o varios servicios.</small><div id="opciones-servicios"></div></fieldset>
+            <label for="motivo-turno">Motivo de la consulta (opcional)</label>
+            <textarea id="motivo-turno" name="motivo" maxlength="500" rows="3" placeholder="Ej. Le duele la cola"></textarea>
+            <button class="button submit-button" type="submit" disabled><span id="texto-boton-turno">Añadir a la cola</span> <span aria-hidden="true">+</span></button>
           </form>
           <div class="current-turn">
             <h2>En atención</h2>

@@ -4,7 +4,7 @@ Proyecto académico en JavaScript para registrar mascotas, gestionar turnos norm
 
 ## Estado del proyecto
 
-Interfaz funcional con registro de mascotas, propietarios y turnos normales persistentes en SQLite. La pantalla Turnos permite añadir pacientes a la cola, llamar al siguiente y cerrar el turno en atención. La primera estructura propia está implementada: una cola FIFO con nodos enlazados. Quedan pendientes la lista del historial, el heap de urgencias, el trie y el grafo. La aplicación funciona localmente y no está publicada en internet.
+Interfaz funcional con registro de mascotas, propietarios y turnos normales persistentes en SQLite. Una visita admite varios servicios y un motivo opcional, y se puede actualizar mientras esté pendiente o en atención sin perder su lugar. El formulario Turnos busca mascotas por nombre o propietario. Hay dos estructuras propias implementadas: una cola FIFO con nodos enlazados y un trie para la búsqueda por prefijo. Quedan pendientes la lista del historial, el heap de urgencias y el grafo. La aplicación funciona localmente y no está publicada en internet.
 
 ## Ejecutar localmente
 
@@ -16,7 +16,7 @@ npm.cmd start
 
 Abre http://localhost:3000. Detén el servidor con `Ctrl+C`. Esta etapa usa solo módulos incluidos en Node.js y no necesita instalar dependencias externas. Debes acceder mediante el servidor; abrir el HTML directamente ya no permite consultar ni guardar registros.
 
-Las guías están en [clase 1](docs/LECCION_01.md), [clase 2](docs/LECCION_02.md) y [clase 3 sobre la cola](docs/LECCION_03.md).
+Las guías están en [clase 1](docs/LECCION_01.md), [clase 2](docs/LECCION_02.md), [clase 3 sobre la cola](docs/LECCION_03.md) y [clase 4 sobre visitas y búsqueda](docs/LECCION_04.md).
 
 ## Base de datos y API
 
@@ -28,14 +28,20 @@ El registro de propietario y mascota se ejecuta en una transacción: ambos se gu
 | --- | --- | --- |
 | `/api/mascotas` | GET | Recuperar las mascotas con los datos de sus propietarios. |
 | `/api/mascotas` | POST | Registrar una mascota y crear o reutilizar su propietario. |
+| `/api/mascotas?q=hen` | GET | Buscar por prefijo del nombre o de una palabra del nombre del propietario. |
 | `/api/turnos` | GET | Consultar la cola, el turno en atención y los servicios. |
-| `/api/turnos` | POST | Solicitar un turno normal para una mascota y un servicio. |
+| `/api/turnos` | POST | Solicitar una visita normal con `mascotaId`, `serviciosIds` y `motivo` opcional. |
+| `/api/turnos/actualizar` | POST | Actualizar los servicios y motivo de una visita activa mediante `turnoId`. |
 | `/api/turnos/llamar` | POST | Pasar el primer turno de la cola a atención. |
 | `/api/turnos/finalizar` | POST | Cerrar el turno que está en atención. |
 
 La tabla `turnos` conserva el estado y el orden de llegada. Antes de consultar o modificar la espera, el backend reconstruye una `Cola` desde los registros pendientes. Crear un turno utiliza `encolar`; llamar al siguiente utiliza `desencolar`. Esta reconstrucción cuesta O(n), mientras las operaciones de insertar y retirar en la cola cuestan O(1). La conversión a arreglo sirve para enviar el resultado como JSON.
 
-Una mascota no puede tener dos turnos activos y solo puede haber un paciente en atención. Los servicios iniciales son Consulta general, Vacunación y Control. Cerrar un turno cambia su estado; el registro de consultas con veterinario e historial se añadirá en las siguientes etapas.
+Una mascota no puede tener dos turnos activos y solo puede haber un paciente en atención. Cada turno reúne uno o varios servicios en `turno_servicios`; la creación y la actualización se guardan en transacciones. Actualizar reemplaza la selección completa de servicios y motivo, conservando identificador, estado y llegada. Los turnos anteriores se migran automáticamente con su servicio original. Se mantiene `servicioId` como entrada compatible con la versión anterior; las nuevas solicitudes usan `serviciosIds`.
+
+El trie se reconstruye al iniciar y se amplía después de guardar una mascota. Indexa nombres completos y sus palabras, ignora tildes y mayúsculas, y conserva identificadores distintos para nombres repetidos. Encontrar el nodo cuesta O(p), donde p es la longitud del prefijo; recuperar k resultados cuesta O(k), y ordenarlos por identificador cuesta O(k log k). La interfaz muestra hasta 30 resultados y conserva el seleccionado si también coincide; se puede escribir más letras para localizar cualquier mascota.
+
+Los servicios iniciales son Consulta general, Vacunación y Control. Cerrar un turno cambia su estado; el registro de consultas con veterinario e historial se añadirá en las siguientes etapas.
 
 El archivo de datos se conserva al detener el servidor y se excluye de Git. Al descargar el código en otro equipo se crea una base vacía. Para la publicación posterior se deberá elegir un servidor con almacenamiento persistente para SQLite.
 
@@ -56,7 +62,7 @@ Las pruebas usan bases independientes de los registros de la aplicación. Cubren
 ## Funciones de la primera versión
 
 - Registrar propietarios y mascotas.
-- Solicitar turnos con un servicio y una prioridad.
+- Solicitar visitas con uno o varios servicios, motivo y prioridad.
 - Llamar al siguiente paciente: primero las urgencias y después los turnos normales.
 - Asignar un veterinario que ofrezca el servicio solicitado.
 - Finalizar la atención y registrar las observaciones de la consulta.
@@ -69,7 +75,7 @@ Las pruebas usan bases independientes de los registros de la aplicación. Cubren
 | Lista enlazada | Recorrer el historial de consultas de cada mascota. |
 | Cola | Implementada con nodos enlazados para procesar turnos normales por orden de llegada. |
 | Heap de prioridad | Procesar urgencias por prioridad y, en caso de empate, por orden de llegada. |
-| Trie | Buscar mascotas por prefijo del nombre y conservar los identificadores de mascotas con nombres iguales. |
+| Trie | Implementado: buscar mascotas por prefijo del nombre o propietario, conservando los identificadores de mascotas con nombres iguales. |
 | Grafo | Representar veterinarios y servicios como vértices, con conexiones que indican qué servicios ofrece cada veterinario. |
 
 Las cinco estructuras tendrán implementaciones propias en JavaScript y participarán en operaciones reales de la aplicación. La base de datos conservará los registros; al iniciar el sistema se reconstruirán las estructuras necesarias a partir de los datos guardados.

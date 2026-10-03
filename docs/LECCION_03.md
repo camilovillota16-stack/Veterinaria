@@ -15,7 +15,7 @@ La cola es la primera de las cinco estructuras obligatorias. Aunque utiliza nodo
 5. Pulsa Cerrar turno para poder llamar al siguiente.
 6. Recarga. La espera y el paciente en atención se recuperan de la base de datos.
 
-Una mascota con turno activo no puede recibir otro. Si todas tienen turno, el formulario se deshabilita hasta que se cierre alguno. El cierre en esta clase es administrativo: la consulta y su historial se incorporarán después.
+En la versión de esta clase, una mascota con turno activo no podía recibir otro y quedaba deshabilitada. La clase 4 amplía ese flujo: se puede seleccionar su visita activa y cambiar los servicios sin crear otro turno. El cierre sigue siendo administrativo: la consulta y su historial se incorporarán después.
 
 ## La clase Cola
 
