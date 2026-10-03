@@ -32,7 +32,7 @@ No hay dependencias externas que instalar en esta clase. `npm.cmd` es la entrada
 
 ## Leer el código en este orden
 
-1. En `index.html`, encuentra `formulario-mascota` y sus cuatro campos. El atributo `name` identifica cada valor para `FormData`; el atributo `id` permite vincular etiquetas y seleccionar elementos.
+1. En `index.html`, encuentra `formulario-mascota` y sus cinco campos. La raza es opcional. El atributo `name` identifica cada valor para `FormData`; el atributo `id` permite vincular etiquetas y seleccionar elementos.
 2. En `js/app.js`, encuentra `const mascotas = []`. Es el estado temporal de la pantalla. `const` impide reemplazar la variable, pero permite añadir elementos al arreglo mediante `push`.
 3. Encuentra `formulario.addEventListener("submit", registrarMascota)`. Registra qué función se ejecuta cuando se envía el formulario. También funciona al pulsar Enter desde un campo.
 4. Lee `registrarMascota`. `preventDefault()` evita la recarga; `FormData` lee los campos; el objeto `mascota` agrupa los datos; `trim()` elimina espacios de los extremos.
@@ -48,12 +48,15 @@ No hay dependencias externas que instalar en esta clase. `npm.cmd` es la entrada
 const mascota = {
   nombre: "Luna",
   especie: "Gato",
+  raza: "Siamés",
   propietario: "Camilo",
   telefono: "300 123 4567",
 };
 ```
 
 Este objeto representa una mascota. Sus propiedades permiten acceder a datos concretos: `mascota.nombre` devuelve `"Luna"`.
+
+El ejercicio de añadir la raza conecta tres cambios: un campo con `name="raza"` en HTML, la propiedad `raza` en el objeto y un párrafo en la tarjeta. `mascota.raza || "Sin especificar"` proporciona el texto que se muestra cuando el campo está vacío.
 
 ## Recorrido del registro
 

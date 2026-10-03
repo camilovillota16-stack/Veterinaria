@@ -43,7 +43,7 @@ Los mensajes se ajustarán al cambio real. Si un avance necesita varias etapas i
 ## Datos principales
 
 - Propietario: identificador, nombre y contacto.
-- Mascota: identificador, propietario, nombre y especie.
+- Mascota: identificador, propietario, nombre, especie y raza opcional.
 - Veterinario: identificador y nombre.
 - Servicio: identificador y nombre.
 - Relación entre veterinario y servicio: identificadores de ambos.

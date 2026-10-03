@@ -63,6 +63,9 @@ function crearTarjeta(mascota) {
   especie.className = "species-tag";
   especie.textContent = mascota.especie;
 
+  const raza = document.createElement("p");
+  raza.textContent = `Raza: ${mascota.raza || "Sin especificar"}`;
+
   const propietario = document.createElement("p");
   propietario.textContent = `Propietario: ${mascota.propietario}`;
 
@@ -70,7 +73,7 @@ function crearTarjeta(mascota) {
   telefono.textContent = `Contacto: ${mascota.telefono}`;
 
   // textContent muestra lo escrito como texto, sin interpretarlo como HTML.
-  detalles.append(titulo, especie, propietario, telefono);
+  detalles.append(titulo, especie, raza, propietario, telefono);
   tarjeta.append(avatar, detalles);
   return tarjeta;
 }
@@ -83,6 +86,7 @@ function registrarMascota(evento) {
   const mascota = {
     nombre: datos.get("nombre").trim(),
     especie: datos.get("especie"),
+    raza: datos.get("raza").trim(),
     propietario: datos.get("propietario").trim(),
     telefono: datos.get("telefono").trim(),
   };

@@ -44,7 +44,7 @@
       <div class="registry-layout">
         <section class="panel" aria-labelledby="titulo-formulario">
           <h2 id="titulo-formulario">Nueva mascota</h2>
-          <p class="panel-description">Todos los campos son obligatorios.</p>
+          <p class="panel-description">La raza es opcional; los demás campos son obligatorios.</p>
           <form id="formulario-mascota">
             <label for="nombre">Nombre de la mascota</label>
             <input id="nombre" name="nombre" maxlength="60" autocomplete="off" placeholder="Ej. Luna" required>
@@ -57,6 +57,8 @@
               <option value="Conejo">Conejo</option>
               <option value="Otra">Otra</option>
             </select>
+            <label for="raza">Raza (opcional)</label>
+            <input id="raza" name="raza" maxlength="60" placeholder="Ej. Labrador">
             <label for="propietario">Nombre del propietario</label>
             <input id="propietario" name="propietario" maxlength="100" autocomplete="name" placeholder="Ej. Camilo Villota" required>
             <label for="telefono">Teléfono de contacto</label>
