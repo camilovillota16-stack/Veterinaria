@@ -47,7 +47,7 @@ Los mensajes se ajustarán al cambio real. Si un avance necesita varias etapas i
 - Veterinario: identificador y nombre.
 - Servicio: identificador y nombre.
 - Relación entre veterinario y servicio: identificadores de ambos.
-- Turno o visita: identificador, mascota, motivo opcional, tipo, prioridad, orden de llegada y estado.
+- Turno o visita: identificador, mascota, veterinario asignado, motivo opcional, tipo, prioridad, orden de llegada y estado.
 - Servicio de una visita: identificadores del turno y del servicio; una visita admite varios servicios.
 - Consulta: identificador, turno, veterinario, fecha y observaciones.
 
@@ -60,7 +60,8 @@ Los mensajes se ajustarán al cambio real. Si un avance necesita varias etapas i
 - Las urgencias se atienden antes que los turnos normales. A igual prioridad se conserva el orden de llegada.
 - La prioridad urgente va de 1 (baja) a 3 (alta); los normales tienen prioridad 0. Solo se reclasifican visitas pendientes, conservando su llegada original.
 - Llamar al siguiente requiere cerrar la atención actual; una nueva urgencia no interrumpe automáticamente al paciente activo.
-- La asignación de veterinarios debe cubrir los servicios de la visita mediante conexiones del grafo (pendiente).
+- Un solo veterinario cubre todos los servicios de la visita. El grafo obtiene los vecinos comunes de los servicios y la interfaz permite escoger entre ellos. Sin profesional compatible, el próximo paciente conserva su posición pendiente.
+- Editar los servicios de la atención o del profesional asignado no puede invalidar la asignación actual. Las atenciones antiguas sin profesional requieren asignarlo antes de cerrar.
 - Finalizar una atención guarda la consulta y cambia el estado del turno en una misma transacción de base de datos.
 - Si falla la persistencia, se conserva o restaura la coherencia de las estructuras en memoria.
 - La búsqueda por prefijo del nombre o propietario permite distinguir mascotas con el mismo nombre mediante su propietario o identificador.
@@ -72,7 +73,7 @@ Los mensajes se ajustarán al cambio real. Si un avance necesita varias etapas i
 - Con estructuras vacías, llamar al siguiente paciente muestra un mensaje claro.
 - Buscar un prefijo devuelve todas las mascotas correspondientes, incluso si comparten nombre.
 - El historial conserva las consultas y se puede recorrer después de reiniciar la aplicación.
-- La asignación solo ofrece veterinarios relacionados con el servicio solicitado.
+- La asignación solo ofrece veterinarios relacionados con todos los servicios solicitados.
 - Si no hay un veterinario compatible, el sistema informa la situación y mantiene el turno pendiente.
 - Al finalizar una atención, consulta y estado del turno se guardan juntos o se revierten juntos ante un fallo.
 - El enlace público permite completar el flujo desde registrar una mascota hasta consultar su atención.

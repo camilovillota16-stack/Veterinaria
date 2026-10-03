@@ -8,6 +8,7 @@ const archivos = new Map([
   ["/css/styles.css", ["css/styles.css", "text/css"]],
   ["/js/app.js", ["js/app.js", "text/javascript"]],
   ["/js/turnos.js", ["js/turnos.js", "text/javascript"]],
+  ["/js/veterinarios.js", ["js/veterinarios.js", "text/javascript"]],
 ]);
 
 function responderJson(respuesta, estado, datos) {
@@ -47,6 +48,9 @@ export function crearServidor(almacen) {
     ["/api/turnos/actualizar", almacen.actualizarTurno],
     ["/api/turnos/llamar", almacen.llamarSiguiente],
     ["/api/turnos/finalizar", almacen.finalizarTurno],
+    ["/api/turnos/asignar", almacen.asignarVeterinario],
+    ["/api/veterinarios", almacen.registrarVeterinario],
+    ["/api/veterinarios/actualizar", almacen.actualizarVeterinario],
   ]);
   return createServer(async (solicitud, respuesta) => {
     try {
@@ -74,8 +78,8 @@ export function crearServidor(almacen) {
         return;
       }
       if (rutasTurnos.has(ruta)) {
-        if (ruta === "/api/turnos" && solicitud.method === "GET") {
-          responderJson(respuesta, 200, almacen.estadoTurnos());
+        if (["/api/turnos", "/api/veterinarios"].includes(ruta) && solicitud.method === "GET") {
+          responderJson(respuesta, 200, ruta === "/api/turnos" ? almacen.estadoTurnos() : almacen.listarVeterinarios());
         } else if (solicitud.method === "POST") {
           const origen = solicitud.headers.origin;
           if (origen && origen !== `http://${solicitud.headers.host}`) {
@@ -83,9 +87,9 @@ export function crearServidor(almacen) {
           }
           const datos = await leerJson(solicitud);
           const operacion = rutasTurnos.get(ruta);
-          responderJson(respuesta, ruta === "/api/turnos" ? 201 : 200, operacion(datos));
+          responderJson(respuesta, ["/api/turnos", "/api/veterinarios"].includes(ruta) ? 201 : 200, operacion(datos));
         } else {
-          respuesta.setHeader("Allow", ruta === "/api/turnos" ? "GET, POST" : "POST");
+          respuesta.setHeader("Allow", ["/api/turnos", "/api/veterinarios"].includes(ruta) ? "GET, POST" : "POST");
           responderJson(respuesta, 405, { error: "Método no permitido." });
         }
         return;

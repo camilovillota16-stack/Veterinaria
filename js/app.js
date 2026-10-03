@@ -17,7 +17,7 @@ let guardando = false;
 
 function mostrarPagina() {
   const destino = location.hash.slice(1);
-  const pagina = ["inicio", "mascotas", "turnos"].includes(destino) ? destino : "inicio";
+  const pagina = ["inicio", "mascotas", "turnos", "veterinarios"].includes(destino) ? destino : "inicio";
 
   document.querySelectorAll(".page").forEach((seccion) => {
     seccion.hidden = seccion.id !== pagina;
@@ -31,7 +31,7 @@ function mostrarPagina() {
     }
   });
 
-  const titulos = { inicio: "Inicio", mascotas: "Registro de mascotas", turnos: "Turnos de atención" };
+  const titulos = { inicio: "Inicio", mascotas: "Registro de mascotas", turnos: "Turnos de atención", veterinarios: "Veterinarios y servicios" };
   document.title = `VetTurnos · ${titulos[pagina]}`;
 }
 

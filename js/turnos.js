@@ -10,6 +10,9 @@ const botonLlamar = document.querySelector("#llamar-siguiente");
 const botonCerrar = document.querySelector("#cerrar-turno");
 const botonActualizarTurnos = document.querySelector("#recargar-turnos");
 const avisoTurnos = document.querySelector("#estado-turnos");
+const veterinarioSiguiente = document.querySelector("#veterinario-siguiente");
+const veterinarioActual = document.querySelector("#veterinario-actual");
+const botonAsignar = document.querySelector("#asignar-veterinario");
 let estadoCola = null;
 let operacionTurno = false;
 let buscando = false;
@@ -26,8 +29,11 @@ function serviciosSeleccionados() {
 function actualizarBotonesTurnos() {
   const bloqueado = operacionTurno || !estadoCola;
   botonTurno.disabled = bloqueado || buscando || !mascotaTurno.value || !serviciosSeleccionados().length;
-  botonLlamar.disabled = bloqueado || Boolean(estadoCola?.enAtencion) || !estadoCola?.cantidad;
-  botonCerrar.disabled = bloqueado || !estadoCola?.enAtencion;
+  botonLlamar.disabled = bloqueado || Boolean(estadoCola?.enAtencion) || !estadoCola?.cantidad || !veterinarioSiguiente.value;
+  botonCerrar.disabled = bloqueado || !estadoCola?.enAtencion?.veterinarioId;
+  botonAsignar.disabled = bloqueado || !estadoCola?.enAtencion || !veterinarioActual.value;
+  veterinarioSiguiente.disabled = bloqueado || Boolean(estadoCola?.enAtencion) || !estadoCola?.siguiente?.veterinariosCompatibles.length;
+  veterinarioActual.disabled = bloqueado || !estadoCola?.enAtencion?.veterinariosCompatibles.length;
   botonActualizarTurnos.disabled = operacionTurno;
   mascotaTurno.disabled = bloqueado || buscando;
   buscadorTurno.disabled = operacionTurno;
@@ -98,6 +104,13 @@ function mostrarEstadoCola(mascotas, estado) {
   document.querySelector("#siguiente-turno").textContent = estado.siguiente
     ? `${estado.enAtencion ? "Después de cerrar la atención actual" : "Próximo paciente"}: ${estado.siguiente.mascotaNombre} · ${etiquetaAtencion(estado.siguiente)}.`
     : "No hay pacientes pendientes.";
+  mostrarOpcionesVeterinarios(veterinarioSiguiente, estado.siguiente, veterinarioSiguiente.value);
+  mostrarOpcionesVeterinarios(veterinarioActual, estado.enAtencion, estado.enAtencion?.veterinarioId);
+  document.querySelector("#ayuda-asignacion").textContent = !estado.siguiente
+    ? "Solicita una visita para ver los profesionales compatibles."
+    : estado.siguiente.veterinariosCompatibles.length
+      ? "Se muestran profesionales que ofrecen todos los servicios del próximo paciente."
+      : "No hay un profesional compatible. Registra o actualiza sus servicios en Veterinarios; esta visita conserva su lugar en espera.";
   const actual = document.querySelector("#turno-actual");
   actual.replaceChildren();
   const paciente = document.createElement("p");
@@ -106,6 +119,12 @@ function mostrarEstadoCola(mascotas, estado) {
     ? `${estado.enAtencion.mascotaNombre} · ${estado.enAtencion.servicio} · Visita #${estado.enAtencion.id} · ${etiquetaAtencion(estado.enAtencion)}`
     : "Todavía no hay un paciente en atención.";
   actual.append(paciente);
+  if (estado.enAtencion) {
+    const profesional = document.createElement("p");
+    profesional.className = "panel-description";
+    profesional.textContent = estado.enAtencion.veterinario ? `Veterinario: ${estado.enAtencion.veterinario}` : "Esta visita anterior aún necesita un veterinario. Asígnalo antes de cerrarla.";
+    actual.append(profesional);
+  }
   if (estado.enAtencion?.motivo) {
     const motivo = document.createElement("p");
     motivo.className = "panel-description";
@@ -114,6 +133,17 @@ function mostrarEstadoCola(mascotas, estado) {
   }
   document.querySelector("#contador-turnos").textContent = estado.cantidad;
   document.querySelector("#total-turnos").textContent = estado.cantidad;
+}
+function mostrarOpcionesVeterinarios(selector, turno, seleccionado) {
+  selector.replaceChildren();
+  const opciones = turno?.veterinariosCompatibles ?? [];
+  if (!opciones.length) {
+    selector.append(opcionTurno("", turno ? "Sin profesional compatible" : "Sin paciente"));
+    return;
+  }
+  opciones.forEach((v) => selector.append(opcionTurno(v.id, `${v.nombre} · #${v.id}`)));
+  const valor = String(seleccionado ?? "");
+  selector.value = opciones.some((v) => String(v.id) === valor) ? valor : String(opciones[0].id);
 }
 function etiquetaAtencion(turno) {
   return turno.tipo === "urgente"
@@ -233,6 +263,8 @@ buscadorTurno.addEventListener("input", () => {
 mascotaTurno.addEventListener("change", prepararVisitaSeleccionada);
 opcionesServicios.addEventListener("change", actualizarBotonesTurnos);
 tipoTurno.addEventListener("change", actualizarBotonesTurnos);
+veterinarioSiguiente.addEventListener("change", actualizarBotonesTurnos);
+veterinarioActual.addEventListener("change", actualizarBotonesTurnos);
 formularioTurno.addEventListener("submit", (evento) => {
   evento.preventDefault();
   if (botonTurno.disabled) return;
@@ -245,7 +277,12 @@ formularioTurno.addEventListener("submit", (evento) => {
     ...datos, ...(visita ? { turnoId: visita.id } : { mascotaId: Number(mascotaTurno.value) }),
   }, visita ? "Visita actualizada. Conserva su llegada; el orden depende del tipo y la prioridad." : "Visita registrada con sus servicios. Las urgencias pasan primero, según su prioridad.");
 });
-botonLlamar.addEventListener("click", () => enviarOperacionTurno("/api/turnos/llamar", {}, "El siguiente paciente según prioridad y llegada pasó a atención."));
+botonLlamar.addEventListener("click", () => enviarOperacionTurno("/api/turnos/llamar", {
+  turnoId: estadoCola.siguiente?.id, veterinarioId: Number(veterinarioSiguiente.value),
+}, "El siguiente paciente pasó a atención con su veterinario asignado."));
+botonAsignar.addEventListener("click", () => enviarOperacionTurno("/api/turnos/asignar", {
+  turnoId: estadoCola.enAtencion?.id, veterinarioId: Number(veterinarioActual.value),
+}, "Veterinario asignado a la visita actual."));
 botonCerrar.addEventListener("click", () => enviarOperacionTurno("/api/turnos/finalizar", {}, "Visita cerrada. Puedes llamar al siguiente paciente."));
 botonActualizarTurnos.addEventListener("click", cargarTurnos);
 window.addEventListener("hashchange", () => { if (location.hash === "#turnos") cargarTurnos(); });

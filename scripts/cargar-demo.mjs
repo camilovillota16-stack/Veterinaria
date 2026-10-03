@@ -43,6 +43,24 @@ try {
     console.log(`Registrada: ${mascota.nombre} · ${mascota.propietario}`);
   }
   console.log(`Carga terminada: ${creadas} nuevas, ${ejemplos.length - creadas} ya existentes.`);
+  const servicios = (await solicitar("/api/turnos")).servicios;
+  const veterinarios = await solicitar("/api/veterinarios");
+  for (const ejemplo of [
+    { nombre: "Demo Ana Veterinaria", nombresServicios: ["Consulta general", "Control"] },
+    { nombre: "Demo Bruno Veterinario", nombresServicios: ["Consulta general", "Vacunación", "Control"] },
+  ]) {
+    if (veterinarios.some((v) => v.nombre.toLocaleLowerCase("es") === ejemplo.nombre.toLocaleLowerCase("es"))) {
+      console.log(`Ya existe el profesional: ${ejemplo.nombre}`);
+      continue;
+    }
+    const serviciosIds = ejemplo.nombresServicios.map((nombre) => servicios.find((s) => s.nombre === nombre)?.id);
+    if (serviciosIds.some((id) => !id)) throw new Error("Falta un servicio necesario para los profesionales de demostración.");
+    await solicitar("/api/veterinarios", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre: ejemplo.nombre, serviciosIds }),
+    });
+    console.log(`Registrado el profesional: ${ejemplo.nombre}`);
+  }
 } catch (error) {
   console.error("No se completó la carga:", error.message);
   console.error("Comprueba que npm.cmd start esté funcionando en el puerto 3000. Puedes repetir este comando para continuar con los ejemplos que falten.");

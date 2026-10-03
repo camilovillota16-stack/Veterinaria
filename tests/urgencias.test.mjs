@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { mkdirSync, unlinkSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { HeapPrioridad } from "../estructuras/heap.mjs";
-import { crearAlmacen } from "../db/database.mjs";
+import { crearAlmacenConVeterinario as crearAlmacen } from "./ayudas.mjs";
 import { crearServidor } from "../api/servidor.mjs";
 
 function solicitar(almacen, nombre, tipo = "normal", prioridad = 0) {

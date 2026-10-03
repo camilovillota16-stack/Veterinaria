@@ -19,6 +19,8 @@ En la base principal ya existe Henry. Al cargar los ejemplos, habrá siete masco
 
 ## Recorrido que ya podemos practicar
 
+La carga también registra Demo Ana Veterinaria (Consulta general y Control) y Demo Bruno Veterinario (Consulta general, Vacunación y Control). Puedes registrar o editar profesionales desde Veterinarios; repetir el comando conserva las ediciones de los profesionales existentes.
+
 1. Registrar una mascota desde el formulario y recargar para mostrar persistencia.
 2. Buscar `lu` y distinguir las dos Luna por especie, propietario e identificador.
 3. Buscar `amba` para mostrar que encuentra Ámbar sin escribir la tilde.
@@ -26,13 +28,14 @@ En la base principal ya existe Henry. Al cargar los ejemplos, habrá siete masco
 5. Añadir Max como urgente de prioridad 2.
 6. Añadir Nala y después Rocky como urgentes de prioridad 3.
 7. Mostrar la espera: Nala, Rocky, Max y la Luna normal (si no hay otros pendientes).
-8. Llamar al siguiente y cerrar cada visita para verificar el orden.
+8. Escoger un profesional compatible, llamar al siguiente y cerrar cada visita para verificar el orden.
+9. Al llegar a la Luna con Consulta general y Vacunación, comprobar que solo se ofrece Bruno: Ana no ofrece vacunación.
+10. Recargar mientras está en atención para mostrar que la asignación se conserva. Después cerrar su turno.
 
 Los turnos se crean durante la práctica; la carga de mascotas no crea turnos. Si ya hay un paciente activo, termina su visita antes de iniciar el recorrido.
 
 ## Lo que falta para la presentación final
 
-- Asignar veterinarios mediante el grafo y comprobar servicios compatibles.
 - Guardar consultas y recorrer el historial mediante la lista enlazada.
 - Publicar y comprobar el recorrido desde los enlaces de entrega.
 - Completar el documento final y explicar las cinco estructuras con ejemplos propios.
