@@ -58,6 +58,8 @@ Los mensajes se ajustarán al cambio real. Si un avance necesita varias etapas i
 - Cambiar los servicios o el motivo de una visita activa conserva su estado y orden de llegada; una visita finalizada ya no se modifica.
 - Un turno pendiente se encuentra en la cola normal o en el heap de urgencias, según su tipo.
 - Las urgencias se atienden antes que los turnos normales. A igual prioridad se conserva el orden de llegada.
+- La prioridad urgente va de 1 (baja) a 3 (alta); los normales tienen prioridad 0. Solo se reclasifican visitas pendientes, conservando su llegada original.
+- Llamar al siguiente requiere cerrar la atención actual; una nueva urgencia no interrumpe automáticamente al paciente activo.
 - La asignación de veterinarios debe cubrir los servicios de la visita mediante conexiones del grafo (pendiente).
 - Finalizar una atención guarda la consulta y cambia el estado del turno en una misma transacción de base de datos.
 - Si falla la persistencia, se conserva o restaura la coherencia de las estructuras en memoria.

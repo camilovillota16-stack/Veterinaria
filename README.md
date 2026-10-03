@@ -4,7 +4,7 @@ Proyecto académico en JavaScript para registrar mascotas, gestionar turnos norm
 
 ## Estado del proyecto
 
-Interfaz funcional con registro de mascotas, propietarios y turnos normales persistentes en SQLite. Una visita admite varios servicios y un motivo opcional, y se puede actualizar mientras esté pendiente o en atención sin perder su lugar. El formulario Turnos busca mascotas por nombre o propietario. Hay dos estructuras propias implementadas: una cola FIFO con nodos enlazados y un trie para la búsqueda por prefijo. Quedan pendientes la lista del historial, el heap de urgencias y el grafo. La aplicación funciona localmente y no está publicada en internet.
+Interfaz funcional con registro de mascotas, propietarios y turnos normales y urgentes persistentes en SQLite. Una visita admite varios servicios y un motivo opcional. El formulario Turnos busca mascotas por nombre o propietario y permite actualizar visitas activas. Hay tres estructuras propias implementadas: una cola FIFO, un trie para la búsqueda y un heap para las urgencias. Quedan pendientes la lista del historial y el grafo. La aplicación funciona localmente y no está publicada en internet.
 
 ## Ejecutar localmente
 
@@ -16,7 +16,7 @@ npm.cmd start
 
 Abre http://localhost:3000. Detén el servidor con `Ctrl+C`. Esta etapa usa solo módulos incluidos en Node.js y no necesita instalar dependencias externas. Debes acceder mediante el servidor; abrir el HTML directamente ya no permite consultar ni guardar registros.
 
-Las guías están en [clase 1](docs/LECCION_01.md), [clase 2](docs/LECCION_02.md), [clase 3 sobre la cola](docs/LECCION_03.md) y [clase 4 sobre visitas y búsqueda](docs/LECCION_04.md).
+Las guías están en [clase 1](docs/LECCION_01.md), [clase 2](docs/LECCION_02.md), [clase 3 sobre la cola](docs/LECCION_03.md), [clase 4 sobre visitas y búsqueda](docs/LECCION_04.md) y [clase 5 sobre urgencias](docs/LECCION_05.md).
 
 ## Base de datos y API
 
@@ -29,15 +29,17 @@ El registro de propietario y mascota se ejecuta en una transacción: ambos se gu
 | `/api/mascotas` | GET | Recuperar las mascotas con los datos de sus propietarios. |
 | `/api/mascotas` | POST | Registrar una mascota y crear o reutilizar su propietario. |
 | `/api/mascotas?q=hen` | GET | Buscar por prefijo del nombre o de una palabra del nombre del propietario. |
-| `/api/turnos` | GET | Consultar la cola, el turno en atención y los servicios. |
-| `/api/turnos` | POST | Solicitar una visita normal con `mascotaId`, `serviciosIds` y `motivo` opcional. |
-| `/api/turnos/actualizar` | POST | Actualizar los servicios y motivo de una visita activa mediante `turnoId`. |
-| `/api/turnos/llamar` | POST | Pasar el primer turno de la cola a atención. |
+| `/api/turnos` | GET | Consultar espera normal, urgencias por prioridad, próximo paciente, atención actual y servicios. |
+| `/api/turnos` | POST | Solicitar una visita con `mascotaId`, `serviciosIds`, `tipo`, `prioridad` y `motivo` opcional. |
+| `/api/turnos/actualizar` | POST | Actualizar servicios y motivo mediante `turnoId`; también tipo y prioridad mientras esté pendiente. |
+| `/api/turnos/llamar` | POST | Pasar la primera urgencia del heap a atención o, si no hay, el primer turno normal de la cola. |
 | `/api/turnos/finalizar` | POST | Cerrar el turno que está en atención. |
 
-La tabla `turnos` conserva el estado y el orden de llegada. Antes de consultar o modificar la espera, el backend reconstruye una `Cola` desde los registros pendientes. Crear un turno utiliza `encolar`; llamar al siguiente utiliza `desencolar`. Esta reconstrucción cuesta O(n), mientras las operaciones de insertar y retirar en la cola cuestan O(1). La conversión a arreglo sirve para enviar el resultado como JSON.
+La tabla `turnos` conserva el estado y el orden de llegada. El backend reconstruye una `Cola` desde los normales pendientes y un `HeapPrioridad` desde las urgencias pendientes. Crear un turno utiliza `encolar` o `insertar`; llamar al siguiente utiliza `extraer` del heap, o `desencolar` si no hay urgencias. La cola se reconstruye en O(n) y sus operaciones cuestan O(1). Insertar y extraer del heap cuestan O(log u); reconstruirlo con inserciones y producir su vista ordenada cuestan O(u log u), donde u es la cantidad de urgencias. La vista usa una copia del heap, sin consumir la espera real.
 
-Una mascota no puede tener dos turnos activos y solo puede haber un paciente en atención. Cada turno reúne uno o varios servicios en `turno_servicios`; la creación y la actualización se guardan en transacciones. Actualizar reemplaza la selección completa de servicios y motivo, conservando identificador, estado y llegada. Los turnos anteriores se migran automáticamente con su servicio original. Se mantiene `servicioId` como entrada compatible con la versión anterior; las nuevas solicitudes usan `serviciosIds`.
+Las urgencias tienen prioridad baja (1), media (2) o alta (3); todas pasan antes que los normales (prioridad 0). A igual prioridad se atiende el menor identificador de turno, que conserva la llegada. El tipo y la prioridad solo se cambian en espera; reclasificar conserva el identificador y la llegada, pero puede cambiar el orden de atención. Una urgencia nueva no interrumpe al paciente que está en atención: pasa al cerrar la visita actual. Si no se envía tipo, las nuevas solicitudes se consideran normales; una urgencia sin prioridad explícita toma 1. Al editar, los campos omitidos conservan la clasificación existente.
+
+Una mascota no puede tener dos turnos activos y solo puede haber un paciente en atención. Cada turno reúne uno o varios servicios en `turno_servicios`; la creación y la actualización se guardan en transacciones. Actualizar reemplaza la selección completa de servicios y motivo, conservando identificador, estado y llegada. Los turnos anteriores se migran automáticamente con su servicio original y prioridad 0 para normales (1 para urgentes antiguos sin prioridad). Se mantiene `servicioId` como entrada compatible con la versión anterior; las nuevas solicitudes usan `serviciosIds`.
 
 El trie se reconstruye al iniciar y se amplía después de guardar una mascota. Indexa nombres completos y sus palabras, ignora tildes y mayúsculas, y conserva identificadores distintos para nombres repetidos. Encontrar el nodo cuesta O(p), donde p es la longitud del prefijo; recuperar k resultados cuesta O(k), y ordenarlos por identificador cuesta O(k log k). La interfaz muestra hasta 30 resultados y conserva el seleccionado si también coincide; se puede escribir más letras para localizar cualquier mascota.
 
@@ -74,7 +76,7 @@ Las pruebas usan bases independientes de los registros de la aplicación. Cubren
 | --- | --- |
 | Lista enlazada | Recorrer el historial de consultas de cada mascota. |
 | Cola | Implementada con nodos enlazados para procesar turnos normales por orden de llegada. |
-| Heap de prioridad | Procesar urgencias por prioridad y, en caso de empate, por orden de llegada. |
+| Heap de prioridad | Implementado: urgencias por prioridad y, en caso de empate, por orden de llegada. |
 | Trie | Implementado: buscar mascotas por prefijo del nombre o propietario, conservando los identificadores de mascotas con nombres iguales. |
 | Grafo | Representar veterinarios y servicios como vértices, con conexiones que indican qué servicios ofrece cada veterinario. |
 

@@ -95,6 +95,12 @@ form small { color: var(--muted); font-size: 11px; line-height: 1.6; }
 .current-turn h2 { margin-bottom: 18px; }
 .current-turn .button { margin-top: 15px; }
 .queue-position { flex: 0 0 35px; font-weight: 700; color: var(--green); font-size: 18px; }
+.queue-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 24px; }
+.queue-heading h3 { margin: 0; font-size: 14px; }
+.next-turn { margin: 20px 0 0; }
+.urgent-card { border-color: #e3c08b; background: #fffbf4; }
+.urgent-card .queue-position { color: #855621; }
+.urgent-tag { background: #fff0d8; color: #855621; }
 @media (min-width: 1600px) { main { margin-right: auto; } }
 @media (max-width: 1050px) {
   .sidebar { width: 200px; padding: 28px 18px; }
