@@ -122,3 +122,9 @@ Comprobación del navegador con una base independiente en el puerto 3001:
 Se reinició el servidor principal con la migración del veterinario. La carga de demostración conservó las seis mascotas existentes y añadió dos profesionales ficticios. Repetirla reconoció ambos profesionales sin duplicarlos. El navegador principal muestra Ana con Consulta general y Control y Bruno con los tres servicios. No se añadieron visitas de prueba a la base principal.
 
 Hay cuatro estructuras implementadas: cola, trie, heap y grafo. Quedan pendientes la lista enlazada del historial, el registro de observaciones y la publicación.
+
+## Ajuste de disponibilidad y consulta abierta
+
+Pasaron las 39 pruebas automatizadas. Se actualizó la prueba de asignación para rechazar cambios de veterinario durante una consulta y se añadió la comprobación de ocupado/disponible: un profesional ocupado queda fuera de las opciones disponibles, sigue existiendo una sola atención y vuelve a estar disponible al cerrar. Las visitas antiguas sin profesional todavía pueden completar su asignación.
+
+Se comprobó en una base de prueba independiente: Luna en atención con Ana y Max en espera. Turnos mostró el nombre de Ana como ocupada, sin selector para cambiarla ni selector del próximo veterinario. Veterinarios mostró Ana ocupada y Bruno disponible. Al cerrar a Luna, reapareció la selección del próximo profesional con Ana y Bruno, y Llamar siguiente quedó habilitado. Este ajuste mantiene una sola consulta abierta en toda la veterinaria.

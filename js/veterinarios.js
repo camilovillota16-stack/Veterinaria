@@ -69,7 +69,9 @@ function pintarVeterinarios(lista, servicios) {
     titulo.textContent = v.nombre;
     const texto = document.createElement("p");
     texto.textContent = v.servicios.map((s) => s.nombre).join(" · ");
-    detalle.append(titulo, texto);
+    const disponibilidad = document.createElement("p");
+    disponibilidad.textContent = v.ocupado ? "Ocupado · consulta en curso" : "Disponible";
+    detalle.append(titulo, texto, disponibilidad);
     tarjeta.append(detalle);
     contenedor.append(tarjeta);
   });

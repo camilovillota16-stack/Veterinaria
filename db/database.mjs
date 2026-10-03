@@ -166,7 +166,9 @@ export function crearAlmacen(ruta) {
   }
 
   function listarVeterinarios() {
-    return consultarVeterinarios.all().map((v) => ({ ...v, servicios: serviciosVeterinario.all(v.id) }));
+    const actual = enAtencion.get();
+    return consultarVeterinarios.all().map((v) => ({ ...v, servicios: serviciosVeterinario.all(v.id),
+      ocupado: actual?.veterinarioId === v.id }));
   }
 
   function guardarVeterinario(datos, editar = false) {
@@ -186,7 +188,7 @@ export function crearAlmacen(ruta) {
       const actual = enAtencion.get();
       if (editar && actual?.veterinarioId === datos.veterinarioId
         && consultarServiciosTurno.all(actual.id).some((s) => !visita.serviciosIds.includes(s.id))) {
-        throw new ErrorSolicitud("No puedes quitar un servicio que está atendiendo. Reasigna la visita primero.", 409);
+        throw new ErrorSolicitud("No puedes quitar un servicio que está atendiendo. Espera a que termine la consulta.", 409);
       }
       let id = datos.veterinarioId;
       if (editar) modificarVeterinario.run(nombre, clave, id);
@@ -221,8 +223,10 @@ export function crearAlmacen(ruta) {
   function completarTurno(turno, grafo = reconstruirGrafo()) {
     if (!turno) return null;
     const listaServicios = consultarServiciosTurno.all(turno.id);
+    const veterinariosCompatibles = compatibles(listaServicios.map((s) => s.id), grafo);
+    const ocupado = enAtencion.get()?.veterinarioId;
     return { ...turno, servicios: listaServicios, servicio: listaServicios.map((s) => s.nombre).join(" · "),
-      veterinariosCompatibles: compatibles(listaServicios.map((s) => s.id), grafo) };
+      veterinariosCompatibles, veterinariosDisponibles: veterinariosCompatibles.filter((v) => v.id !== ocupado) };
   }
 
   function reconstruirCola(grafo = reconstruirGrafo()) {
@@ -351,7 +355,7 @@ export function crearAlmacen(ruta) {
       }
       guardarServicios(turno.id, visita);
       if (turno.veterinarioId && !compatibles(visita.serviciosIds).some((v) => v.id === turno.veterinarioId)) {
-        throw new ErrorSolicitud("El veterinario asignado no ofrece todos esos servicios. Reasigna la visita antes de cambiarlos.", 409);
+        throw new ErrorSolicitud("El veterinario asignado no ofrece todos esos servicios. Durante la consulta no puedes cambiar de profesional.", 409);
       }
       actualizarClasificacion.run(clasificacion.tipo, clasificacion.prioridad, turno.id);
       return completarTurno(buscarTurno.get(turno.id));
@@ -393,6 +397,7 @@ export function crearAlmacen(ruta) {
     return enTransaccion(() => {
       const actual = completarTurno(enAtencion.get());
       if (!actual || actual.id !== datos.turnoId) throw new ErrorSolicitud("La visita indicada no está en atención. Actualiza los turnos.", 409);
+      if (actual.veterinarioId) throw new ErrorSolicitud("La consulta ya tiene un veterinario asignado. No puedes cambiarlo durante la atención.", 409);
       const veterinario = elegirVeterinario(actual, datos);
       asignarTurno.run(veterinario.id, actual.id);
       return completarTurno(buscarTurno.get(actual.id));

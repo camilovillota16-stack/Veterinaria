@@ -43,7 +43,7 @@ El registro de propietario y mascota se ejecuta en una transacción: ambos se gu
 | `/api/turnos` | POST | Solicitar una visita con `mascotaId`, `serviciosIds`, `tipo`, `prioridad` y `motivo` opcional. |
 | `/api/turnos/actualizar` | POST | Actualizar servicios y motivo mediante `turnoId`; también tipo y prioridad mientras esté pendiente. |
 | `/api/turnos/llamar` | POST | Llamar al próximo paciente y asignar `veterinarioId`; `turnoId` opcional protege contra una selección desactualizada. |
-| `/api/turnos/asignar` | POST | Asignar o cambiar el profesional compatible de la atención actual mediante `turnoId` y `veterinarioId`. |
+| `/api/turnos/asignar` | POST | Completar la asignación de una atención antigua sin profesional mediante `turnoId` y `veterinarioId`; una asignación existente no se cambia. |
 | `/api/turnos/finalizar` | POST | Cerrar el turno que está en atención. |
 | `/api/veterinarios` | GET | Listar profesionales y sus servicios. |
 | `/api/veterinarios` | POST | Registrar un profesional con `nombre` y `serviciosIds`. |
@@ -61,7 +61,9 @@ Los servicios iniciales son Consulta general, Vacunación y Control. Cada veteri
 
 El grafo propio usa listas de adyacencia con `Map` y `Set`: vértices `veterinario:ID` y `servicio:ID`, conectados en ambos sentidos. Se reconstruye desde `veterinarios`, `servicios` y `veterinario_servicios`; los vecinos comunes de los servicios son los profesionales compatibles. Su construcción cuesta O(V + S + E). Para una visita con k servicios, la intersección cuesta O(d × k), donde d es el número de profesionales del primer servicio; después se filtra la lista de V profesionales para conservar su orden.
 
-Un solo profesional cubre todos los servicios de cada visita y se guarda en `turnos.veterinario_id`. Si no hay uno compatible, el próximo paciente sigue pendiente; no se salta al siguiente. La interfaz envía la elección explícita. La API permite omitir `veterinarioId` y usa el primer compatible por identificador. La llamada y la asignación se guardan juntas en una transacción. No se pueden retirar servicios al profesional ni cambiar los de una atención si esto invalida su asignación actual; se puede reasignar antes a otro compatible. Como solo hay una atención simultánea, no se requiere una agenda por profesional.
+Un solo profesional cubre todos los servicios de cada visita y se guarda en `turnos.veterinario_id`. Si no hay uno compatible, el próximo paciente sigue pendiente; no se salta al siguiente. La interfaz envía la elección explícita. La API permite omitir `veterinarioId` y usa el primer compatible por identificador. La llamada y la asignación se guardan juntas en una transacción. Durante la consulta se conserva al veterinario asignado. No se pueden retirar servicios al profesional ni cambiar los de una atención si esto invalida su asignación actual. Solo hay una consulta abierta en toda la veterinaria.
+
+La lista de profesionales indica Disponible u Ocupado. Cada visita incluye `veterinariosCompatibles` por servicios y `veterinariosDisponibles`, que excluye al profesional en atención. Mientras la consulta está abierta, se oculta el selector del próximo veterinario y se muestra el nombre del actual sin opción para cambiarlo. Al cerrar, se vuelve a ofrecer la selección para el próximo paciente.
 
 Las visitas anteriores conservan sus datos al añadir la columna del veterinario. Una atención antigua sin profesional debe asignarlo antes de cerrar; los turnos ya finalizados permanecen con asignación vacía. Cerrar cambia el estado del turno; el registro de observaciones y el historial se añadirán en la siguiente etapa.
 
