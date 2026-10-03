@@ -31,9 +31,13 @@ function actualizarBotonesTurnos() {
   botonTurno.disabled = bloqueado || buscando || !mascotaTurno.value || !serviciosSeleccionados().length;
   botonLlamar.disabled = bloqueado || Boolean(estadoCola?.enAtencion) || !estadoCola?.cantidad || !veterinarioSiguiente.value;
   botonCerrar.disabled = bloqueado || !estadoCola?.enAtencion?.veterinarioId;
-  botonAsignar.disabled = bloqueado || !estadoCola?.enAtencion || !veterinarioActual.value;
-  veterinarioSiguiente.disabled = bloqueado || Boolean(estadoCola?.enAtencion) || !estadoCola?.siguiente?.veterinariosCompatibles.length;
-  veterinarioActual.disabled = bloqueado || !estadoCola?.enAtencion?.veterinariosCompatibles.length;
+  const asignacionPendiente = Boolean(estadoCola?.enAtencion && !estadoCola.enAtencion.veterinarioId);
+  botonAsignar.disabled = bloqueado || !asignacionPendiente || !veterinarioActual.value;
+  veterinarioSiguiente.disabled = bloqueado || Boolean(estadoCola?.enAtencion) || !estadoCola?.siguiente?.veterinariosDisponibles.length;
+  veterinarioActual.disabled = bloqueado || !asignacionPendiente || !estadoCola.enAtencion.veterinariosDisponibles.length;
+  document.querySelector("#asignacion-pendiente").hidden = !asignacionPendiente;
+  document.querySelector("#asignacion-siguiente").hidden = !estadoCola?.siguiente || Boolean(estadoCola?.enAtencion);
+  botonCerrar.hidden = !estadoCola?.enAtencion;
   botonActualizarTurnos.disabled = operacionTurno;
   mascotaTurno.disabled = bloqueado || buscando;
   buscadorTurno.disabled = operacionTurno;
@@ -104,9 +108,11 @@ function mostrarEstadoCola(mascotas, estado) {
   document.querySelector("#siguiente-turno").textContent = estado.siguiente
     ? `${estado.enAtencion ? "Después de cerrar la atención actual" : "Próximo paciente"}: ${estado.siguiente.mascotaNombre} · ${etiquetaAtencion(estado.siguiente)}.`
     : "No hay pacientes pendientes.";
-  mostrarOpcionesVeterinarios(veterinarioSiguiente, estado.siguiente, veterinarioSiguiente.value);
+  mostrarOpcionesVeterinarios(veterinarioSiguiente, estado.enAtencion ? null : estado.siguiente, veterinarioSiguiente.value);
   mostrarOpcionesVeterinarios(veterinarioActual, estado.enAtencion, estado.enAtencion?.veterinarioId);
-  document.querySelector("#ayuda-asignacion").textContent = !estado.siguiente
+  document.querySelector("#ayuda-asignacion").textContent = estado.enAtencion
+    ? "Hay una consulta abierta. Cierra el turno para volver a elegir veterinario y llamar al próximo paciente."
+    : !estado.siguiente
     ? "Solicita una visita para ver los profesionales compatibles."
     : estado.siguiente.veterinariosCompatibles.length
       ? "Se muestran profesionales que ofrecen todos los servicios del próximo paciente."
@@ -122,7 +128,7 @@ function mostrarEstadoCola(mascotas, estado) {
   if (estado.enAtencion) {
     const profesional = document.createElement("p");
     profesional.className = "panel-description";
-    profesional.textContent = estado.enAtencion.veterinario ? `Veterinario: ${estado.enAtencion.veterinario}` : "Esta visita anterior aún necesita un veterinario. Asígnalo antes de cerrarla.";
+    profesional.textContent = estado.enAtencion.veterinario ? `Veterinario: ${estado.enAtencion.veterinario} · Ocupado hasta cerrar esta consulta.` : "Esta visita anterior aún necesita un veterinario. Asígnalo antes de cerrarla.";
     actual.append(profesional);
   }
   if (estado.enAtencion?.motivo) {
@@ -136,7 +142,7 @@ function mostrarEstadoCola(mascotas, estado) {
 }
 function mostrarOpcionesVeterinarios(selector, turno, seleccionado) {
   selector.replaceChildren();
-  const opciones = turno?.veterinariosCompatibles ?? [];
+  const opciones = turno?.veterinariosDisponibles ?? [];
   if (!opciones.length) {
     selector.append(opcionTurno("", turno ? "Sin profesional compatible" : "Sin paciente"));
     return;

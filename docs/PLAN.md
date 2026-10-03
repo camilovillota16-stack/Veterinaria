@@ -62,6 +62,7 @@ Los mensajes se ajustarán al cambio real. Si un avance necesita varias etapas i
 - Llamar al siguiente requiere cerrar la atención actual; una nueva urgencia no interrumpe automáticamente al paciente activo.
 - Un solo veterinario cubre todos los servicios de la visita. El grafo obtiene los vecinos comunes de los servicios y la interfaz permite escoger entre ellos. Sin profesional compatible, el próximo paciente conserva su posición pendiente.
 - Editar los servicios de la atención o del profesional asignado no puede invalidar la asignación actual. Las atenciones antiguas sin profesional requieren asignarlo antes de cerrar.
+- El profesional asignado se conserva durante la consulta. Mientras hay una consulta abierta, se oculta la selección del próximo veterinario; al cerrar vuelve a estar disponible. La pantalla Veterinarios muestra Disponible u Ocupado.
 - Finalizar una atención guarda la consulta y cambia el estado del turno en una misma transacción de base de datos.
 - Si falla la persistencia, se conserva o restaura la coherencia de las estructuras en memoria.
 - La búsqueda por prefijo del nombre o propietario permite distinguir mascotas con el mismo nombre mediante su propietario o identificador.

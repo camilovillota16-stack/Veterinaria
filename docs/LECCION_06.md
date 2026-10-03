@@ -57,7 +57,9 @@ SQLite guarda las tablas `veterinarios` y `veterinario_servicios`. La segunda ti
 
 Registrar o editar guarda el nombre y todas sus conexiones en una transacción. Llamar guarda el cambio de estado y la asignación juntos. Si ocurre un error, se revierte toda la operación.
 
-En esta versión un profesional debe cubrir todos los servicios y solo hay una atención simultánea. Sin profesional compatible, se informa el problema y el próximo paciente sigue pendiente. No se modifica la prioridad para resolverlo. Tampoco se permite retirar un servicio que necesita la visita que ese profesional está atendiendo. Puedes reasignar la visita antes a otro profesional compatible.
+En esta versión un profesional debe cubrir todos los servicios y solo hay una consulta abierta en toda la veterinaria. Sin profesional compatible, se informa el problema y el próximo paciente sigue pendiente. No se modifica la prioridad para resolverlo. Tampoco se permite retirar un servicio que necesita la visita que ese profesional está atendiendo.
+
+El veterinario se elige antes de llamar y se mantiene durante la consulta. Mientras atiende, figura como Ocupado y no aparece como disponible. Se muestra su nombre, sin selector para cambiarlo. La selección del próximo veterinario se oculta hasta cerrar el turno; después el profesional vuelve a estar disponible. En Veterinarios puedes ver el estado de cada profesional.
 
 Las visitas antiguas se conservan. Si una estaba en atención antes de esta mejora y no tiene veterinario, selecciónalo y pulsa Asignar veterinario antes de cerrarla. Los nombres de los profesionales son únicos sin distinguir mayúsculas; es una simplificación del proyecto.
 

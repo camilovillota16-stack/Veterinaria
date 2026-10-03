@@ -114,10 +114,12 @@
           <div class="current-turn">
             <h2>En atención</h2>
             <div id="turno-actual"><p class="panel-description">Cargando atención actual…</p></div>
-            <label for="veterinario-actual">Veterinario para la atención actual</label>
-            <select id="veterinario-actual" disabled><option value="">Sin paciente en atención</option></select>
-            <button id="asignar-veterinario" class="button" type="button" disabled>Asignar veterinario</button>
-            <button id="cerrar-turno" class="button" type="button" disabled>Cerrar turno</button>
+            <div id="asignacion-pendiente" hidden>
+              <label for="veterinario-actual">Veterinario para la atención actual</label>
+              <select id="veterinario-actual" disabled><option value="">Selecciona un profesional</option></select>
+              <button id="asignar-veterinario" class="button" type="button" disabled>Asignar veterinario</button>
+            </div>
+            <button id="cerrar-turno" class="button" type="button" disabled hidden>Cerrar turno</button>
           </div>
         </section>
         <section class="panel" aria-labelledby="titulo-cola">
@@ -127,8 +129,10 @@
           <div id="lista-urgencias" class="patient-list" aria-live="polite"><p class="empty-state">Cargando urgencias…</p></div>
           <div class="queue-heading"><h3>Turnos normales</h3><span id="contador-normales" class="count-badge">0</span></div>
           <div id="lista-turnos" class="patient-list" aria-live="polite"><p class="empty-state">Cargando turnos…</p></div>
-          <label class="assignment-label" for="veterinario-siguiente">Veterinario para el próximo paciente</label>
-          <select id="veterinario-siguiente" disabled><option value="">Consultando profesionales…</option></select>
+          <div id="asignacion-siguiente" hidden>
+            <label class="assignment-label" for="veterinario-siguiente">Veterinario para el próximo paciente</label>
+            <select id="veterinario-siguiente" disabled><option value="">Consultando profesionales…</option></select>
+          </div>
           <p id="ayuda-asignacion" class="panel-description" role="status"></p>
           <button id="llamar-siguiente" class="button submit-button" type="button" disabled>Llamar siguiente <span aria-hidden="true">→</span></button>
         </section>

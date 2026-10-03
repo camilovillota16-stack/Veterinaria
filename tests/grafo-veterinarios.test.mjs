@@ -85,7 +85,7 @@ test("sin profesional compatible la urgencia no se pierde ni se salta, y se rech
   } finally { almacen.cerrar(); }
 });
 
-test("la visita activa conserva compatibilidad al editar servicios, profesionales o reasignar", () => {
+test("la visita conserva al veterinario asignado durante la consulta y valida los cambios de servicios", () => {
   const almacen = crearAlmacen(":memory:");
   try {
     const ana = almacen.registrarVeterinario({ nombre: "Ana", serviciosIds: [1] });
@@ -95,12 +95,32 @@ test("la visita activa conserva compatibilidad al editar servicios, profesionale
     assert.throws(() => almacen.actualizarTurno({ turnoId: turno.id, serviciosIds: [1, 2] }), (e) => e.estado === 409);
     assert.deepEqual(almacen.estadoTurnos().enAtencion.servicios.map((s) => s.id), [1]);
     assert.throws(() => almacen.actualizarVeterinario({ veterinarioId: ana.id, nombre: "Ana", serviciosIds: [2] }), (e) => e.estado === 409);
-    almacen.asignarVeterinario({ turnoId: turno.id, veterinarioId: bruno.id });
-    almacen.actualizarTurno({ turnoId: turno.id, serviciosIds: [1, 2] });
-    assert.equal(almacen.estadoTurnos().enAtencion.veterinarioId, bruno.id);
+    assert.throws(() => almacen.asignarVeterinario({ turnoId: turno.id, veterinarioId: bruno.id }), (e) => e.estado === 409);
     assert.throws(() => almacen.asignarVeterinario({ turnoId: turno.id, veterinarioId: ana.id }), (e) => e.estado === 409);
+    almacen.actualizarVeterinario({ veterinarioId: ana.id, nombre: "Ana", serviciosIds: [1, 2] });
+    almacen.actualizarTurno({ turnoId: turno.id, serviciosIds: [1, 2] });
+    assert.equal(almacen.estadoTurnos().enAtencion.veterinarioId, ana.id);
     almacen.finalizarTurno();
     assert.throws(() => almacen.asignarVeterinario({ turnoId: turno.id, veterinarioId: bruno.id }), (e) => e.estado === 409);
+  } finally { almacen.cerrar(); }
+});
+
+test("el profesional ocupado deja de estar disponible hasta cerrar la única consulta abierta", () => {
+  const almacen = crearAlmacen(":memory:");
+  try {
+    const ana = almacen.registrarVeterinario({ nombre: "Ana", serviciosIds: [1] });
+    const bruno = almacen.registrarVeterinario({ nombre: "Bruno", serviciosIds: [1] });
+    visita(almacen, "Luna");
+    const max = visita(almacen, "Max");
+    almacen.llamarSiguiente({ veterinarioId: ana.id });
+    assert.deepEqual(almacen.estadoTurnos().siguiente.veterinariosDisponibles.map((v) => v.id), [bruno.id]);
+    assert.equal(almacen.listarVeterinarios().find((v) => v.id === ana.id).ocupado, true);
+    assert.throws(() => almacen.llamarSiguiente({ veterinarioId: bruno.id }), (e) => e.estado === 409);
+    assert.equal(almacen.estadoTurnos().siguiente.id, max.id);
+    almacen.finalizarTurno();
+    assert.deepEqual(almacen.estadoTurnos().siguiente.veterinariosDisponibles.map((v) => v.id), [ana.id, bruno.id]);
+    assert.equal(almacen.listarVeterinarios().find((v) => v.id === ana.id).ocupado, false);
+    assert.equal(almacen.llamarSiguiente({ veterinarioId: ana.id }).id, max.id);
   } finally { almacen.cerrar(); }
 });
 
