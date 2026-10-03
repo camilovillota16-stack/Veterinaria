@@ -19,7 +19,16 @@ En la base principal ya existe Henry. Al cargar los ejemplos, habrá siete masco
 
 ## Recorrido que ya podemos practicar
 
-La carga también registra Demo Ana Veterinaria (Consulta general y Control) y Demo Bruno Veterinario (Consulta general, Vacunación y Control). Puedes registrar o editar profesionales desde Veterinarios; repetir el comando conserva las ediciones de los profesionales existentes.
+La carga también registra cuatro profesionales ficticios. Puedes registrar o editar profesionales desde Veterinarios; repetir el comando conserva las ediciones de los profesionales existentes.
+
+En Turnos, el bloque Añadir otro veterinario lleva al formulario de un profesional nuevo. Escribe su nombre, marca sus servicios y pulsa Registrar veterinario. Para editar uno existente, selecciónalo en Profesional.
+
+| Profesional | Servicios |
+| --- | --- |
+| Demo Ana Veterinaria | Consulta general y Control. |
+| Demo Bruno Veterinario | Consulta general, Vacunación y Control. |
+| Demo Carla Veterinaria | Consulta general, Vacunación y Control. |
+| Demo Diego Veterinario | Consulta general, Vacunación y Control. |
 
 1. Registrar una mascota desde el formulario y recargar para mostrar persistencia.
 2. Buscar `lu` y distinguir las dos Luna por especie, propietario e identificador.
@@ -29,18 +38,19 @@ La carga también registra Demo Ana Veterinaria (Consulta general y Control) y D
 6. Añadir Nala y después Rocky como urgentes de prioridad 3.
 7. Mostrar la espera: Nala, Rocky, Max y la Luna normal (si no hay otros pendientes).
 8. Escoger un profesional compatible, llamar al siguiente y cerrar cada visita para verificar el orden.
-9. Al llegar a la Luna con Consulta general y Vacunación, comprobar que solo se ofrece Bruno: Ana no ofrece vacunación.
+9. Al llegar a la Luna con Consulta general y Vacunación, comprobar que aparecen Bruno, Carla y Diego si están libres: Ana no ofrece vacunación.
 10. Recargar mientras está en atención para mostrar que la asignación se conserva. Después cerrar su turno.
 
 Los turnos se crean durante la práctica; la carga de mascotas no crea turnos. Para observar el orden desde una espera limpia, termina las consultas previas antes de iniciar el recorrido. Durante el recorrido puedes llamar al próximo con un veterinario libre sin cerrar las otras consultas.
 
 ## Varios profesionales atendiendo
 
-1. Solicitar dos visitas normales con Consulta general, primero Henry y después una Luna.
-2. Llamar a Henry con Ana. Ana queda ocupada; Bruno continúa disponible para Luna.
-3. Llamar a Luna con Bruno sin cerrar la consulta de Henry. Se muestran ambas tarjetas.
-4. Cerrar la consulta de Luna: Henry sigue con Ana y Bruno vuelve a estar disponible.
-5. Registrar un tercer profesional desde Veterinarios mientras Ana atiende. Al volver a Turnos aparece como disponible si ofrece los servicios del próximo paciente.
+1. Solicitar cinco visitas normales con Consulta general: Henry, una Luna, Max, Nala y Rocky, en ese orden.
+2. Llamar a Henry con Ana. Ana queda ocupada; los otros tres continúan disponibles.
+3. Llamar a Luna con Bruno, a Max con Carla y a Nala con Diego, sin cerrar las consultas anteriores. Se muestran cuatro tarjetas, cada una con su paciente y veterinario.
+4. Rocky queda en espera porque los cuatro veterinarios están ocupados.
+5. Cerrar la consulta de Luna: Henry, Max y Nala siguen en atención; Bruno vuelve a estar disponible.
+6. Llamar a Rocky con Bruno. Se recuperan las cuatro consultas abiertas sin cambiar el orden de llegada.
 
 Las llamadas respetan la llegada y prioridad; los cierres pueden ocurrir en otro orden porque las consultas duran tiempos diferentes.
 

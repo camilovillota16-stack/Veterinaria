@@ -120,6 +120,10 @@ formularioVet.addEventListener("submit", async (evento) => {
   } finally { operacionVet = false; botonesVet(); }
 });
 editarVet.addEventListener("change", seleccionarVet);
+document.querySelector('#nuevo-veterinario-turnos').addEventListener('click', () => {
+  editarVet.value = '';
+  seleccionarVet();
+});
 serviciosVet.addEventListener("change", botonesVet);
 recargarVet.addEventListener("click", cargarVeterinarios);
 window.addEventListener("hashchange", () => { if (location.hash === "#veterinarios") cargarVeterinarios(); });

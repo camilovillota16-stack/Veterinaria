@@ -4,10 +4,10 @@ Ahora podemos registrar profesionales, marcar qué servicios ofrecen y asignar u
 
 ## Primero prueba la función
 
-1. Recarga la aplicación y abre Veterinarios. La carga de demostración incluye Ana y Bruno.
-2. Ana ofrece Consulta general y Control; Bruno ofrece los tres servicios.
+1. Recarga la aplicación y abre Veterinarios. La carga de demostración incluye Ana, Bruno, Carla y Diego.
+2. Ana ofrece Consulta general y Control; los otros tres ofrecen todos los servicios.
 3. En Turnos, busca una mascota sin visita activa y solicita Consulta general y Vacunación.
-4. Cuando sea el próximo paciente, observa el selector: solo debe ofrecer Bruno.
+4. Cuando sea el próximo paciente, observa el selector: ofrece Bruno, Carla y Diego si están libres; Ana no ofrece vacunación.
 5. Llama al siguiente. La tarjeta En atención muestra al profesional asignado.
 6. Recarga: la visita y el veterinario continúan guardados. Luego cierra el turno.
 
@@ -23,7 +23,7 @@ Ana ─── Control ──────────── Bruno
         Vacunación ──────── Bruno
 ```
 
-Para una visita con consulta y vacunación:
+Considerando solo a Ana y Bruno en este ejemplo, para una visita con consulta y vacunación:
 
 - Vecinos de Consulta general: Ana y Bruno.
 - Vecinos de Vacunación: Bruno.
