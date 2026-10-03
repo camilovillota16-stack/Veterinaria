@@ -40,12 +40,12 @@ Las cinco estructuras tendrán implementaciones propias en JavaScript y particip
 
 ## Enlaces
 
-- Repositorio remoto: pendiente.
+- Repositorio remoto: https://github.com/camilovillota16-stack/Veterinaria
 - Aplicación publicada: pendiente.
 - Backend publicado: pendiente de definición.
 
 ## Trabajo con Git
 
-Cada avance funcional se revisará antes de crear un commit con un mensaje que explique el cambio. Solo se incluirán archivos del proyecto. Los commits se subirán cuando esté configurado el repositorio remoto y se integrarán en `main` después de comprobar el funcionamiento.
+Cada avance funcional se revisará antes de crear un commit con un mensaje que explique el cambio. Solo se incluirán archivos del proyecto. La rama de trabajo inicial es `codex/inicio`. Los commits se subirán al repositorio remoto y se integrarán en `main` después de comprobar el funcionamiento.
 
 El plan de implementación y las comprobaciones están en [docs/PLAN.md](docs/PLAN.md).
