@@ -1,4 +1,6 @@
-# Verificación de la clase 1
+# Verificación del proyecto
+
+## Clase 1 Registro temporal
 
 Comprobaciones realizadas el 3 de octubre de 2026 con Node.js 24.14.1 y el navegador integrado de Codex.
 
@@ -20,3 +22,27 @@ Comprobaciones realizadas el 3 de octubre de 2026 con Node.js 24.14.1 y el naveg
 | Vista móvil de 390 por 844 | Contenido en una columna, sin desbordamiento horizontal observado. |
 
 Estas comprobaciones corresponden a la interfaz y el registro temporal. La API, la base de datos y las cinco estructuras propias se verificarán cuando se implementen.
+
+## Clase 2 Persistencia y API
+
+Ocho pruebas automatizadas pasaron con `npm.cmd test` el 3 de octubre de 2026. Utilizan bases independientes de `data/veterinaria.db`.
+
+- Persistencia al cerrar y volver a abrir el archivo SQLite.
+- Reutilización del propietario al variar mayúsculas y separadores del teléfono, distinguiendo propietarios con distinto nombre.
+- Raza opcional y nombres con comillas tratados como datos.
+- Rechazo de campos inválidos desde el backend.
+- Reversión del propietario nuevo ante un fallo simulado al insertar la mascota; los registros anteriores permanecen intactos.
+- Registro mediante POST y recuperación mediante GET.
+- Respuestas ante JSON inválido, campos inválidos y contenido excesivo.
+- Restricción de archivos entregados, métodos y orígenes de solicitudes.
+
+Comprobaciones manuales en el navegador, con una base de prueba en el puerto 3001:
+
+| Comprobación | Resultado observado |
+| --- | --- |
+| Registrar Luna persistente con raza y Max persistente sin raza | Dos tarjetas con la información correspondiente. |
+| Recargar la página | Ambas mascotas se recuperan de SQLite. |
+| Detener el servidor, volver a iniciarlo y recargar | Ambas mascotas siguen disponibles. |
+| Enviar un registro mientras el servidor está detenido | Mensaje de error, campos conservados y ninguna tarjeta del registro fallido. |
+
+La aplicación principal usa el puerto 3000 y su propio archivo `data/veterinaria.db`. El despliegue público y las cinco estructuras propias siguen pendientes.

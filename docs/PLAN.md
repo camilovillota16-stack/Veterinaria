@@ -2,7 +2,7 @@
 
 ## Alcance y decisiones pendientes
 
-El proyecto será desarrollado por una persona, con JavaScript y un plazo de quince días. La interfaz utilizará HTML y CSS. Antes de implementar la persistencia se seleccionarán la tecnología del backend, la base de datos y los servicios de publicación compatibles.
+El proyecto será desarrollado por una persona, con JavaScript y un plazo de quince días. La interfaz utiliza HTML y CSS; el backend utiliza Node.js y la persistencia utiliza SQLite a través del módulo incluido `node:sqlite`. Queda pendiente seleccionar los servicios de publicación, incluido un almacenamiento persistente para la base de datos.
 
 La rúbrica no especifica un mínimo de integrantes. Se debe confirmar con el profesor que se acepta una entrega individual. También se debe confirmar si hay restricciones sobre librerías y cuál es el alcance esperado de las transacciones de base de datos.
 

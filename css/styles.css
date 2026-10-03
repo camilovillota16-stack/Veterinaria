@@ -44,6 +44,8 @@ h2 { font-size: 19px; font-weight: 650; letter-spacing: -.4px; margin: 0; }
 .welcome-panel p:not(.eyebrow) { color: var(--muted); font-size: 13px; line-height: 1.8; margin: 17px 0 23px; }
 .button { display: inline-flex; justify-content: space-between; align-items: center; gap: 22px; border: 0; background: var(--green); color: white; padding: 14px 18px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; cursor: pointer; }
 .button:hover { background: #174c3b; }
+.button:disabled { cursor: wait; opacity: .6; }
+.retry-button { margin-bottom: 24px; }
 .button span { font-size: 19px; line-height: 1; }
 .patient-illustration { height: 180px; width: 210px; position: relative; justify-self: center; }
 .face { position: absolute; width: 116px; height: 106px; background: #f5cd92; border: 2px solid #d4a063; border-radius: 42% 42% 48% 48%; left: 47px; top: 30px; }

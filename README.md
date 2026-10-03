@@ -4,19 +4,42 @@ Proyecto académico en JavaScript para registrar mascotas, gestionar turnos norm
 
 ## Estado del proyecto
 
-Primera interfaz funcional: navegación entre Inicio y Mascotas, registro de mascotas con raza opcional y datos del propietario, validación y contadores. Si la raza está vacía, la tarjeta muestra «Sin especificar». Los registros se conservan solo en memoria y se pierden al recargar. Todavía no hay API, base de datos ni estructuras propias implementadas. La aplicación no está publicada.
+Interfaz funcional con navegación, registro de mascotas con raza opcional, datos del propietario, validación y contadores. Los registros se guardan en SQLite mediante una API en Node.js y se recuperan al abrir la página. Si la raza está vacía, la tarjeta muestra «Sin especificar». Las cinco estructuras propias todavía están pendientes. La aplicación funciona localmente y no está publicada en internet.
 
 ## Ejecutar localmente
 
-Requiere Node.js 20 o superior. En la terminal, dentro de la carpeta del proyecto:
+Requiere Node.js 24 o superior. Se ha verificado con Node.js 24.14.1. En la terminal, dentro de la carpeta del proyecto:
 
 ```powershell
 npm.cmd start
 ```
 
-Abre http://localhost:3000. Detén el servidor con `Ctrl+C`. Esta etapa usa solo módulos incluidos en Node.js y no necesita instalar dependencias externas.
+Abre http://localhost:3000. Detén el servidor con `Ctrl+C`. Esta etapa usa solo módulos incluidos en Node.js y no necesita instalar dependencias externas. Debes acceder mediante el servidor; abrir el HTML directamente ya no permite consultar ni guardar registros.
 
-La explicación del código y los ejercicios están en [docs/LECCION_01.md](docs/LECCION_01.md).
+La explicación inicial está en [docs/LECCION_01.md](docs/LECCION_01.md) y el guardado persistente se explica en [docs/LECCION_02.md](docs/LECCION_02.md).
+
+## Base de datos y API
+
+Al iniciar, se crean automáticamente las tablas y el archivo `data/veterinaria.db`. Las tablas `propietarios` y `mascotas` se relacionan mediante `propietario_id`. Un registro reutiliza al propietario si coinciden su nombre sin distinguir mayúsculas y su teléfono sin separadores; personas con distinto nombre pueden compartir teléfono. Este criterio es una simplificación para la primera versión.
+
+El registro de propietario y mascota se ejecuta en una transacción: ambos se guardan o ambos se revierten. La raza puede omitirse. El backend vuelve a validar los campos y utiliza consultas SQL con parámetros.
+
+| Ruta | Método | Función |
+| --- | --- | --- |
+| `/api/mascotas` | GET | Recuperar las mascotas con los datos de sus propietarios. |
+| `/api/mascotas` | POST | Registrar una mascota y crear o reutilizar su propietario. |
+
+El archivo de datos se conserva al detener el servidor y se excluye de Git. Al descargar el código en otro equipo se crea una base vacía. Para la publicación posterior se deberá elegir un servidor con almacenamiento persistente para SQLite.
+
+Opcionalmente, `PORT` cambia el puerto local y `VETERINARIA_DB_PATH` indica otra ruta de base de datos. El módulo `node:sqlite` puede mostrar `ExperimentalWarning` en la versión de Node utilizada; las pruebas se ejecutaron con esa versión. Referencia: [SQLite en Node.js](https://nodejs.org/download/release/v24.8.0/docs/api/sqlite.html).
+
+## Comprobaciones
+
+```powershell
+npm.cmd test
+```
+
+Las pruebas usan bases independientes de los registros de la aplicación. Cubren persistencia, transacciones, reutilización de propietarios, validación y respuestas de la API. Los resultados manuales están en [docs/PRUEBAS.md](docs/PRUEBAS.md).
 
 ## Integrante
 

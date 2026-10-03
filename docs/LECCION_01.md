@@ -1,5 +1,7 @@
 # Clase 1 Interfaz y registro de mascotas
 
+Esta guía describe el primer avance, hasta el commit `e1e4d2a`, cuando los registros eran temporales. La versión actual ya conserva los datos. Continúa con [LECCION_02.md](LECCION_02.md) para entender los cambios.
+
 ## Objetivo
 
 Entender cómo una acción en el formulario se convierte en un objeto JavaScript y se muestra en la pantalla. Al terminar podrás ejecutar el proyecto, registrar una mascota y explicar cada paso del registro.
