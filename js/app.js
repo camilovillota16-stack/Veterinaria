@@ -16,7 +16,8 @@ let datosCargados = false;
 let guardando = false;
 
 function mostrarPagina() {
-  const pagina = location.hash === "#mascotas" ? "mascotas" : "inicio";
+  const destino = location.hash.slice(1);
+  const pagina = ["inicio", "mascotas", "turnos"].includes(destino) ? destino : "inicio";
 
   document.querySelectorAll(".page").forEach((seccion) => {
     seccion.hidden = seccion.id !== pagina;
@@ -30,9 +31,8 @@ function mostrarPagina() {
     }
   });
 
-  document.title = pagina === "inicio"
-    ? "VetTurnos · Inicio"
-    : "VetTurnos · Registro de mascotas";
+  const titulos = { inicio: "Inicio", mascotas: "Registro de mascotas", turnos: "Turnos de atención" };
+  document.title = `VetTurnos · ${titulos[pagina]}`;
 }
 
 function mostrarMensaje(texto, esError = false) {

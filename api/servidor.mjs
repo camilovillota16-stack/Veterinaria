@@ -7,6 +7,7 @@ const archivos = new Map([
   ["/index.html", ["index.html", "text/html"]],
   ["/css/styles.css", ["css/styles.css", "text/css"]],
   ["/js/app.js", ["js/app.js", "text/javascript"]],
+  ["/js/turnos.js", ["js/turnos.js", "text/javascript"]],
 ]);
 
 function responderJson(respuesta, estado, datos) {
@@ -41,6 +42,11 @@ async function leerJson(solicitud) {
 }
 
 export function crearServidor(almacen) {
+  const rutasTurnos = new Map([
+    ["/api/turnos", almacen.registrarTurno],
+    ["/api/turnos/llamar", almacen.llamarSiguiente],
+    ["/api/turnos/finalizar", almacen.finalizarTurno],
+  ]);
   return createServer(async (solicitud, respuesta) => {
     try {
       let ruta;
@@ -61,6 +67,23 @@ export function crearServidor(almacen) {
           responderJson(respuesta, 201, almacen.registrarMascota(datos));
         } else {
           respuesta.setHeader("Allow", "GET, POST");
+          responderJson(respuesta, 405, { error: "Método no permitido." });
+        }
+        return;
+      }
+      if (rutasTurnos.has(ruta)) {
+        if (ruta === "/api/turnos" && solicitud.method === "GET") {
+          responderJson(respuesta, 200, almacen.estadoTurnos());
+        } else if (solicitud.method === "POST") {
+          const origen = solicitud.headers.origin;
+          if (origen && origen !== `http://${solicitud.headers.host}`) {
+            throw new ErrorSolicitud("Origen de la solicitud no permitido.", 403);
+          }
+          const datos = await leerJson(solicitud);
+          const operacion = rutasTurnos.get(ruta);
+          responderJson(respuesta, ruta === "/api/turnos" ? 201 : 200, operacion(datos));
+        } else {
+          respuesta.setHeader("Allow", ruta === "/api/turnos" ? "GET, POST" : "POST");
           responderJson(respuesta, 405, { error: "Método no permitido." });
         }
         return;
