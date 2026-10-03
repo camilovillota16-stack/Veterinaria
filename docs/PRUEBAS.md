@@ -63,3 +63,26 @@ Comprobación manual con una base independiente en el puerto 3001: se registraro
 Se revisó la pantalla de escritorio y la de móvil de 360 por 800. Tras ajustar la navegación, el ancho del contenido y el ancho disponible eran ambos 345 píxeles, sin desbordamiento horizontal. Al reiniciar la aplicación principal se comprobó que su mascota registrada seguía disponible.
 
 La cola está implementada. El historial con lista enlazada, las urgencias con heap, la búsqueda con trie, el grafo y la publicación siguen pendientes.
+
+## Clase 4 Visitas y búsqueda por trie
+
+Las 22 pruebas automatizadas pasaron el 3 de octubre de 2026: las 14 anteriores más ocho de visitas y búsqueda. Cubren prefijos, tildes, mayúsculas, nombres repetidos, búsqueda entre 150 registros, incorporación de nuevas mascotas al índice, varios servicios en una visita, edición en espera y en atención sin cambiar FIFO, validación, persistencia, migración de la versión anterior y reversión completa ante fallos simulados al guardar servicios.
+
+Se comprobó el navegador con 153 mascotas sintéticas en una base independiente en el puerto 3001:
+
+| Comprobación | Resultado observado |
+| --- | --- |
+| Abrir el selector sin búsqueda | 153 coincidencias; primeras 30 visibles y aviso para escribir más letras. |
+| Buscar `hen` | Henry encontrado, aunque su identificador es 151. |
+| Crear una visita con Consulta general, Vacunación y motivo | Una sola posición en espera con ambos servicios y el motivo. |
+| Añadir Control a la misma visita | Mismo número de turno y misma posición. |
+| Buscar `garci` | Ámbar del propietario Ana García, sin necesitar escribir la tilde. |
+| Buscar `amba` | Dos mascotas Ámbar, distinguibles por propietario e identificador. |
+| Buscar un nombre inexistente | Mensaje sin coincidencias y botón de solicitud deshabilitado. |
+| Crear otra visita y llamar al siguiente | Henry pasó primero a atención; la segunda mascota quedó en espera. |
+| Editar los servicios de Henry en atención | Conservó su número y estado; desmarcar Control lo retiró de la visita. |
+| Recargar | Servicios, motivo, atención actual y espera conservados. |
+| Cambiar de mascota | No se mezclaron casillas ni motivo entre pacientes. |
+| Vista móvil de 360 por 800 | Ancho disponible y del contenido de 345 píxeles, sin desbordamiento horizontal. |
+
+La cola y el trie están implementados: dos de las cinco estructuras. Quedan pendientes historial, urgencias, grafo y publicación. Los registros sintéticos no se añadieron a la base principal ni al repositorio.
