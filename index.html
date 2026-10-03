@@ -6,6 +6,7 @@
   <title>VetTurnos · Registro de mascotas</title>
   <link rel="stylesheet" href="css/styles.css">
   <script src="js/app.js" defer></script>
+  <script src="js/turnos.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#contenido">Ir al contenido</a>
@@ -15,6 +16,7 @@
     <nav aria-label="Navegación principal">
       <a href="#inicio" class="nav-link" aria-current="page"><span aria-hidden="true">01</span> Inicio</a>
       <a href="#mascotas" class="nav-link"><span aria-hidden="true">02</span> Mascotas</a>
+      <a href="#turnos" class="nav-link"><span aria-hidden="true">03</span> Turnos</a>
     </nav>
     <div class="sidebar-footer">Cada paciente tiene su historia.<br>Empecemos por conocerlo.</div>
   </aside>
@@ -29,6 +31,7 @@
       <div class="stats">
         <article class="stat"><p>Mascotas registradas</p><strong id="total-mascotas">0</strong><span>Pacientes guardados</span></article>
         <article class="stat"><p>Especies registradas</p><strong id="total-especies">0</strong><span>Diversidad de nuestros pacientes</span></article>
+        <article class="stat"><p>Turnos pendientes</p><strong id="total-turnos">0</strong><span>Pacientes por atender</span></article>
       </div>
       <div class="welcome-panel">
         <div><p class="eyebrow">EL PRIMER PASO</p><h2>Conoce a tu próximo paciente.</h2><p>Guarda su nombre, especie y los datos de su propietario.</p><a class="button" href="#mascotas">Registrar una mascota <span aria-hidden="true">→</span></a></div>
@@ -74,6 +77,36 @@
           <div id="lista-mascotas" class="patient-list" aria-live="polite">
             <p class="empty-state">Cargando mascotas…</p>
           </div>
+        </section>
+      </div>
+    </section>
+    <section id="turnos" class="page" aria-labelledby="titulo-turnos" hidden>
+      <p class="eyebrow">ATENCIÓN EN ORDEN</p>
+      <h1 id="titulo-turnos">Turnos de atención</h1>
+      <p class="intro">Los turnos normales se atienden por orden de llegada.</p>
+      <p id="estado-turnos" class="session-note" role="status">Cargando turnos…</p>
+      <button id="recargar-turnos" class="button retry-button" type="button">Actualizar turnos</button>
+      <div class="registry-layout">
+        <section class="panel" aria-labelledby="titulo-nuevo-turno">
+          <h2 id="titulo-nuevo-turno">Solicitar turno</h2>
+          <p class="panel-description">Selecciona una mascota registrada y el servicio que necesita.</p>
+          <form id="formulario-turno">
+            <label for="mascota-turno">Mascota</label>
+            <select id="mascota-turno" name="mascotaId" required><option value="">Cargando mascotas…</option></select>
+            <label for="servicio-turno">Servicio</label>
+            <select id="servicio-turno" name="servicioId" required><option value="">Cargando servicios…</option></select>
+            <button class="button submit-button" type="submit" disabled>Añadir a la cola <span aria-hidden="true">+</span></button>
+          </form>
+          <div class="current-turn">
+            <h2>En atención</h2>
+            <div id="turno-actual"><p class="panel-description">Cargando atención actual…</p></div>
+            <button id="cerrar-turno" class="button" type="button" disabled>Cerrar turno</button>
+          </div>
+        </section>
+        <section class="panel" aria-labelledby="titulo-cola">
+          <div class="list-heading"><h2 id="titulo-cola">En espera</h2><span id="contador-turnos" class="count-badge">0</span></div>
+          <div id="lista-turnos" class="patient-list" aria-live="polite"><p class="empty-state">Cargando turnos…</p></div>
+          <button id="llamar-siguiente" class="button submit-button" type="button" disabled>Llamar siguiente <span aria-hidden="true">→</span></button>
         </section>
       </div>
     </section>

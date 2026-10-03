@@ -45,4 +45,21 @@ Comprobaciones manuales en el navegador, con una base de prueba en el puerto 300
 | Detener el servidor, volver a iniciarlo y recargar | Ambas mascotas siguen disponibles. |
 | Enviar un registro mientras el servidor está detenido | Mensaje de error, campos conservados y ninguna tarjeta del registro fallido. |
 
-La aplicación principal usa el puerto 3000 y su propio archivo `data/veterinaria.db`. El despliegue público y las cinco estructuras propias siguen pendientes.
+La aplicación principal usa el puerto 3000 y su propio archivo `data/veterinaria.db`. Esta comprobación corresponde a la clase 2, antes de implementar la cola.
+
+## Clase 3 Cola de turnos normales
+
+Las 14 pruebas automatizadas pasaron con `npm.cmd test`: las ocho de persistencia y API, más seis de cola y turnos.
+
+- FIFO con operaciones intercaladas, cola vacía y reutilización.
+- Conversión a arreglo sin alterar el orden interno de los nodos.
+- Orden de llegada independiente del nombre o identificador de la mascota, rechazo de duplicados y cierre obligatorio del turno activo.
+- Recuperación de la espera y del paciente en atención al volver a abrir SQLite.
+- Reversión de un fallo simulado al llamar un turno, conservando al primer paciente pendiente.
+- Flujo de API de solicitud, llamada y cierre, con validación de referencias.
+
+Comprobación manual con una base independiente en el puerto 3001: se registraron Luna, Max y Henry y se solicitaron turnos en el orden Max, Luna, Henry. Max fue llamado primero; la recarga mantuvo a Max en atención y a Luna y Henry en espera. Tras cerrar a Max, se llamó a Luna. Las mascotas con turno activo aparecieron deshabilitadas en el selector.
+
+Se revisó la pantalla de escritorio y la de móvil de 360 por 800. Tras ajustar la navegación, el ancho del contenido y el ancho disponible eran ambos 345 píxeles, sin desbordamiento horizontal. Al reiniciar la aplicación principal se comprobó que su mascota registrada seguía disponible.
+
+La cola está implementada. El historial con lista enlazada, las urgencias con heap, la búsqueda con trie, el grafo y la publicación siguen pendientes.
