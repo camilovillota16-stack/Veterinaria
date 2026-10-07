@@ -4,7 +4,7 @@ Proyecto académico en JavaScript para registrar mascotas, gestionar turnos norm
 
 ## Estado del proyecto
 
-Interfaz funcional con mascotas, propietarios, visitas, veterinarios y consultas persistentes en SQLite. Una visita admite varios servicios y un motivo opcional. Varios veterinarios pueden atender al mismo tiempo, cada uno a su propio paciente. Turnos busca mascotas por nombre o propietario y permite actualizar visitas activas. Al cerrar una consulta se guardan sus observaciones y se puede consultar su historial desde Mascotas. Las cinco estructuras propias están implementadas: cola FIFO, trie, heap de urgencias, grafo de profesionales y servicios, y lista enlazada del historial. Quedan pendientes la publicación en internet y el documento final de entrega.
+Aplicación publicada en [VetTurnos](https://vetturnos-camilo.veterinaria.workers.dev) con el plan gratuito de Cloudflare y consultas persistentes en SQLite. También funciona localmente. Una visita admite varios servicios y un motivo opcional. Varios veterinarios pueden atender al mismo tiempo, cada uno a su propio paciente. Turnos busca mascotas por nombre o propietario y permite actualizar visitas activas. Al cerrar una consulta se guardan sus observaciones y se puede consultar su historial desde Mascotas. Las cinco estructuras propias están implementadas: cola FIFO, trie, heap de urgencias, grafo de profesionales y servicios, y lista enlazada del historial. Queda pendiente el documento final de entrega.
 
 ## Ejecutar localmente
 
@@ -127,8 +127,9 @@ Las cinco estructuras tienen implementaciones propias en JavaScript y participan
 ## Enlaces
 
 - Repositorio remoto: https://github.com/camilovillota16-stack/Veterinaria
-- Aplicación publicada: pendiente.
-- Backend publicado: pendiente de definición.
+- Aplicación publicada: [VetTurnos](https://vetturnos-camilo.veterinaria.workers.dev).
+- Backend publicado: mismo origen; [API de turnos](https://vetturnos-camilo.veterinaria.workers.dev/api/turnos) y [API de mascotas](https://vetturnos-camilo.veterinaria.workers.dev/api/mascotas).
+- Publicación comprobada el 6 de octubre de 2026: seis mascotas y cuatro profesionales ficticios. El historial se conservó después de una nueva publicación.
 
 ## Trabajo con Git
 

@@ -66,6 +66,6 @@ try {
   }
 } catch (error) {
   console.error("No se completó la carga:", error.message);
-  console.error("Comprueba que npm.cmd start esté funcionando en el puerto 3000. Puedes repetir este comando para continuar con los ejemplos que falten.");
+  console.error(`Comprueba que ${base} esté disponible. Puedes repetir este comando para continuar con los ejemplos que falten.`);
   process.exitCode = 1;
 }
