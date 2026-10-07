@@ -1,6 +1,6 @@
 # Preparación de la demostración
 
-Podemos practicar con pocos registros persistentes y preparar el recorrido de la presentación cuando el flujo esté completo.
+Podemos practicar el flujo completo en el servidor local o en [VetTurnos publicado](https://vetturnos-camilo.veterinaria.workers.dev). Son bases distintas. La versión pública ya tiene seis mascotas y cuatro profesionales ficticios, y consultas de prueba guardadas; Henry está en la base local. Para practicar las llamadas normales en internet, sustituye Henry por Ámbar en el recorrido.
 
 ## Mascotas de ejemplo
 
@@ -64,7 +64,6 @@ Explica el recorrido: SQLite conserva las consultas; el backend las carga en una
 
 ## Lo que falta para la presentación final
 
-- Publicar y comprobar el recorrido desde los enlaces de entrega.
 - Completar el documento final y explicar las cinco estructuras con ejemplos propios.
 
-La base SQLite no se sube a GitHub. Al publicar o descargar el proyecto en otro equipo, habrá que cargar allí los ejemplos mediante su servidor y preparar los turnos de nuevo.
+La base SQLite no se sube a GitHub. Al descargar el proyecto en otro equipo, habrá que cargar allí los ejemplos mediante su servidor y preparar los turnos de nuevo. La base pública ya está preparada y conserva sus registros; actualizar el código no requiere volver a cargarla.

@@ -1,6 +1,6 @@
 # Preparar la publicación
 
-Elección del 6 de octubre de 2026: Cloudflare Workers con SQLite en un Durable Object, usando el plan gratuito. Se verificó el flujo en el emulador, incluidas cuatro consultas simultáneas y persistencia tras reinicio. El enlace real se añadirá al README después de verificar la publicación.
+Publicado y verificado el 6 de octubre de 2026: [VetTurnos](https://vetturnos-camilo.veterinaria.workers.dev). Usa Cloudflare Workers con SQLite en un Durable Object y el plan gratuito. Se verificaron las cuatro consultas simultáneas, el orden de atención, los historiales y su persistencia después de una nueva publicación. Hay seis mascotas y cuatro profesionales ficticios en la base pública.
 
 ## Publicación gratuita con Cloudflare
 
@@ -69,4 +69,4 @@ La aplicación académica no tiene usuarios ni permisos: los visitantes del enla
 3. Comprobar orden normal y urgente y disponibilidad de profesionales.
 4. Cerrar con observaciones y consultar el historial.
 5. Reiniciar el servicio y comprobar que los registros siguen guardados.
-6. Añadir al README los enlaces reales y explicar frontend, backend y almacenamiento en el documento final.
+6. Explicar frontend, backend y almacenamiento en el documento final. Los enlaces reales ya figuran en el README.

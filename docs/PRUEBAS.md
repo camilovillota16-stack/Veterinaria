@@ -170,3 +170,11 @@ Se extrajeron las reglas y estructuras a `db/almacen.mjs`. El adaptador Node con
 En el emulador oficial se cargaron seis mascotas y cuatro profesionales ficticios en una base independiente. Se verificó el orden Nala urgente 3, Rocky urgente 3, Max urgente 2 y Luna normal con dos servicios. Se abrieron cuatro consultas con veterinarios distintos; cerrar Luna dejó tres abiertas. Las dos Luna conservaron historiales separados. Se rechazó llamar al segundo normal antes del primero. Dos llamadas concurrentes al mismo veterinario produjeron un éxito y un rechazo; el siguiente turno no se saltó. Después de reiniciar el emulador, se conservaron las dos consultas de la primera Luna en el mismo orden.
 
 La instalación de herramientas terminó con cero vulnerabilidades después de actualizar la dependencia de imágenes del emulador. Los datos de esta prueba no se incorporaron a la base local principal.
+
+## Publicación y persistencia en internet
+
+Se publicó [VetTurnos](https://vetturnos-camilo.veterinaria.workers.dev) en Cloudflare el 6 de octubre de 2026. La API respondió por HTTPS y se cargaron seis mascotas y cuatro profesionales ficticios. Se repitió el recorrido del emulador en el servidor público: urgencias, FIFO, cuatro veterinarios en atención, cierre de una consulta sin afectar las otras, rechazo de salto de llegada, llamadas concurrentes al mismo profesional e historiales separados para las dos Luna.
+
+Se realizó una segunda publicación del mismo Worker. La consulta posterior conservó las seis mascotas, los cuatro profesionales y las dos consultas de la primera Luna, con los mismos identificadores y orden. La versión desplegada fue `ccd8486b-68c0-45ba-8f0f-ac32918815a1`. El navegador público mostró los seis registros y el historial con sus dos visitas, servicios y observaciones. No requiere iniciar sesión para consultar la demostración.
+
+El servidor local se reinició con la versión 0.9.0 y conservó sus siete mascotas, cuatro veterinarios y seis consultas de Henry. La base local no se copió al alojamiento. Al concluir las comprobaciones públicas no quedaron consultas abiertas ni turnos pendientes.

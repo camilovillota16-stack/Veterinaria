@@ -89,3 +89,7 @@ Las comprobaciones se ejecutarán cuando exista la función correspondiente. La 
 ## Estado después de la clase 7
 
 Las cinco estructuras ya participan en el flujo de la aplicación y las consultas persisten después del cierre y del reinicio. Pasaron 49 pruebas automatizadas; las comprobaciones del navegador están en PRUEBAS.md. Faltan la publicación, la comprobación desde los enlaces públicos y el documento final de entrega.
+
+## Estado después de la publicación gratuita
+
+El 6 de octubre de 2026 se publicó VetTurnos en Cloudflare y se verificó el flujo con la API y el navegador. Pasaron 56 pruebas automatizadas y la comprobación de compilación. El historial público se conservó después de una nueva publicación. Los enlaces están en el README. Faltan el documento final, la confirmación de los datos de entrega y el ensayo de la exposición.
