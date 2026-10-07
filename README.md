@@ -18,6 +18,8 @@ Abre http://localhost:3000. Detén el servidor con `Ctrl+C`. Esta etapa usa solo
 
 Para el día de la exposición, sigue [encender, respaldar y exponer](docs/ENCENDER_Y_EXPONER.md). La [guía de publicación](docs/PUBLICACION.md) describe la configuración del alojamiento y lo que falta verificar.
 
+La publicación gratuita usa Cloudflare Workers y un Durable Object con SQLite persistente. La versión local y la alojada comparten `db/almacen.mjs` y las cinco estructuras; solo cambian los adaptadores de almacenamiento y HTTP. La base pública es independiente de `data/veterinaria.db` y usa ejemplos ficticios. No se copian los datos locales a internet.
+
 Las guías están en [clase 1](docs/LECCION_01.md), [clase 2](docs/LECCION_02.md), [clase 3 sobre la cola](docs/LECCION_03.md), [clase 4 sobre visitas y búsqueda](docs/LECCION_04.md), [clase 5 sobre urgencias](docs/LECCION_05.md), [clase 6 sobre veterinarios y grafo](docs/LECCION_06.md) y [clase 7 sobre historial y lista enlazada](docs/LECCION_07.md).
 
 ## Base de datos y API
@@ -29,6 +31,8 @@ npm.cmd run datos:demo
 ```
 
 El comando registra los ejemplos mediante la API del servidor local. Los propietarios se identifican como Demo Ana, Demo Bruno, Demo Carla y Demo Diego, con un teléfono ficticio de ceros. Incluye dos mascotas llamadas Luna para probar la búsqueda por propietario, tres especies y razas opcionales. Ejecutarlo de nuevo reconoce los ejemplos existentes. Los registros se guardan en la base que usa ese servidor; los turnos de la demostración se solicitan desde la interfaz. El código de carga se incluye en Git y el archivo SQLite sigue siendo local.
+
+Para cargar los mismos ejemplos en el servidor público, el comando admite su origen como argumento: `npm.cmd run datos:demo -- https://DIRECCION-PUBLICA`. Reemplaza la dirección por el enlace real de la aplicación. Solo se cargan datos ficticios y profesionales de demostración, sin importar la base local.
 
 También registra cuatro profesionales ficticios: Demo Ana Veterinaria (Consulta general y Control), Demo Bruno Veterinario, Demo Carla Veterinaria y Demo Diego Veterinario (estos últimos ofrecen los tres servicios). Si ya existen por nombre, conserva sus servicios sin reemplazar cambios realizados desde el formulario. Esto permite demostrar cuatro consultas simultáneas con mascotas diferentes.
 

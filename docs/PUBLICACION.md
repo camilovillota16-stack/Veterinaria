@@ -1,10 +1,38 @@
 # Preparar la publicación
 
-Estado al 6 de octubre de 2026: código preparado para configurar la dirección de escucha y aceptar solicitudes del origen público HTTPS. Todavía no hay un servicio publicado ni un enlace verificado. La elección del almacenamiento depende del presupuesto.
+Elección del 6 de octubre de 2026: Cloudflare Workers con SQLite en un Durable Object, usando el plan gratuito. Se verificó el flujo en el emulador, incluidas cuatro consultas simultáneas y persistencia tras reinicio. El enlace real se añadirá al README después de verificar la publicación.
 
-## Qué publicamos
+## Publicación gratuita con Cloudflare
 
-El servidor Node entrega HTML, CSS, JavaScript y la API desde la misma dirección. No necesitamos separar el frontend del backend. Subir el HTML como una página estática no ejecuta la API ni guarda consultas.
+La interfaz conserva HTML, CSS y JavaScript. El Worker entrega los archivos públicos y envía `/api/*` al objeto `Clinica`. El objeto conserva SQLite y ejecuta el mismo almacén y las mismas estructuras que el servidor local. Las transacciones se ejecutan con `storage.transactionSync`; si una operación falla, se revierten sus escrituras.
+
+Todos los visitantes de esta demostración usan la misma clínica. El identificador `principal` mantiene su base. No cambies este identificador ni elimines la clase `Clinica` durante actualizaciones: seleccionarías otra base o podrías perder la existente.
+
+El alojamiento utiliza la dirección gratuita `workers.dev`; no necesita comprar un dominio. El plan gratuito tiene límites de uso. No se debe activar un plan de pago para esta entrega. Referencias oficiales: [plan gratuito y límites](https://developers.cloudflare.com/durable-objects/platform/pricing/), [SQLite y transacciones](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/) y [archivos públicos](https://developers.cloudflare.com/workers/static-assets/binding/).
+
+Pasos desde la carpeta del proyecto, usando una cuenta gratuita de Cloudflare:
+
+```powershell
+npm.cmd ci
+npx.cmd wrangler login
+npm.cmd test
+npm.cmd run web:comprobar
+npm.cmd run web:publicar
+```
+
+`ci` instala las herramientas con las versiones del archivo de bloqueo. `login` conecta la cuenta en el navegador. `web:comprobar` compila sin publicar. `web:publicar` muestra el enlace real al finalizar. Para probar Cloudflare localmente sin modificar su base pública:
+
+```powershell
+npm.cmd run web:probar
+```
+
+Abre `http://localhost:3001/`. Los datos del emulador quedan en `.test-data/cloudflare`, excluidos de Git. El servidor local habitual sigue encendiéndose con `npm.cmd start` y usa el puerto 3000.
+
+Wrangler es una dependencia de desarrollo. Se fijó `sharp` en 0.35.5 mediante `overrides` para corregir un aviso de seguridad de su emulador; la instalación informó cero vulnerabilidades. La aplicación publicada no utiliza esta biblioteca de imágenes.
+
+## Servidor local y alternativa de alojamiento Node
+
+Localmente, Node entrega HTML, CSS, JavaScript y la API desde la misma dirección. En Cloudflare, el Worker realiza esa función. Subir únicamente el HTML como una página estática no ejecuta la API ni guarda consultas.
 
 El servidor usa Node.js 24 o superior y no tiene dependencias externas. Comando de inicio: `npm start`. Comprobación antes del despliegue: `npm test`. En un alojamiento Node, configura la versión 24 y el comando de construcción `npm test`.
 
@@ -30,7 +58,9 @@ Referencias oficiales, revisadas el 6 de octubre de 2026: [planes gratuitos](htt
 
 ## Datos de demostración
 
-Una instalación nueva empieza con una base vacía. Prepararemos allí mascotas y profesionales ficticios. La base local contiene registros del usuario y no se incluye en el código ni se publicará como parte del despliegue. El comando `datos:demo` actual se dirige al servidor local; no carga automáticamente el servidor público.
+Una instalación nueva empieza con una base vacía. El script `datos:demo` carga seis mascotas y cuatro profesionales ficticios. La base local contiene registros del usuario y no se incluye en el código ni se publica como parte del despliegue. Sin argumentos, el comando se dirige al servidor local. Para cargar el enlace público, usa `npm.cmd run datos:demo -- https://DIRECCION-PUBLICA`, reemplazando el origen por el real. La carga no crea visitas ni consultas.
+
+La aplicación académica no tiene usuarios ni permisos: los visitantes del enlace comparten los registros. Utiliza solo ejemplos ficticios. El paquete público contiene únicamente `index.html`, CSS y los cuatro archivos JavaScript de la interfaz; no contiene SQLite, respaldos, código de prueba o credenciales.
 
 ## Comprobar antes de entregar
 

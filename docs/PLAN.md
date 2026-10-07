@@ -4,6 +4,8 @@
 
 El proyecto será desarrollado por una persona, con JavaScript y un plazo de quince días. La interfaz utiliza HTML y CSS; el backend utiliza Node.js y la persistencia utiliza SQLite a través del módulo incluido `node:sqlite`. Queda pendiente seleccionar los servicios de publicación, incluido un almacenamiento persistente para la base de datos.
 
+El 6 de octubre se eligió la publicación gratuita en Cloudflare Workers con SQLite persistente en un Durable Object. El servidor Node local se conserva y comparte las reglas del almacén con la versión publicada. Los datos públicos serán ficticios e independientes de la base local.
+
 La rúbrica no especifica un mínimo de integrantes. Se debe confirmar con el profesor que se acepta una entrega individual. También se debe confirmar si hay restricciones sobre librerías y cuál es el alcance esperado de las transacciones de base de datos.
 
 ## Avances y commits
