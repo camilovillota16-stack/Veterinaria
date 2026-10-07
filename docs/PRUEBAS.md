@@ -154,3 +154,9 @@ Se usó una base independiente en el puerto 3001 con dos mascotas llamadas Luna 
 La vista móvil de 360 por 800 tuvo 345 píxeles de ancho disponible y de contenido, sin desbordamiento horizontal. La captura de escritorio se revisó visualmente. Los pacientes y consultas de esta prueba no se añadieron a la base principal.
 
 Al reiniciar el servidor principal, se conservaron sus siete mascotas y cuatro veterinarios. Se recuperaron las seis visitas finalizadas anteriores de Henry, marcadas como anteriores y con los datos disponibles. Las cinco estructuras están implementadas; quedan pendientes la publicación y la documentación final de entrega.
+
+## Preparación de publicación y guía de encendido
+
+El 6 de octubre de 2026 pasaron 53 pruebas automatizadas. Las cuatro nuevas verifican valores locales y alojados de configuración, prioridad de la dirección pública explícita sobre la proporcionada por Render, puertos y orígenes inválidos, solicitudes del mismo origen local y el flujo de registro, edición, llamada y cierre con un origen HTTPS configurado y un servidor interno HTTP. Todas las rutas de escritura rechazan orígenes ajenos incluso con encabezados X-Forwarded falsificados. La prueba HTTPS simula el encabezado que envía el navegador detrás de un proxy; no representa un despliegue real ni una conexión TLS local.
+
+Se añadieron las guías ENCENDER_Y_EXPONER.md y PUBLICACION.md. La configuración local continúa usando 127.0.0.1:3000 sin variables adicionales. Las comprobaciones de sintaxis y diferencias pasaron. La publicación y la persistencia en el servidor público todavía deben comprobarse después de elegir el almacenamiento.

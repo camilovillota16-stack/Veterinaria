@@ -43,7 +43,14 @@ async function leerJson(solicitud) {
   }
 }
 
-export function crearServidor(almacen) {
+export function crearServidor(almacen, { origenPublico } = {}) {
+  function validarOrigen(solicitud) {
+    const origen = solicitud.headers.origin;
+    const esperado = origenPublico ?? `http://${solicitud.headers.host}`;
+    if (origen && origen !== esperado) {
+      throw new ErrorSolicitud("Origen de la solicitud no permitido.", 403);
+    }
+  }
   const rutasTurnos = new Map([
     ["/api/turnos", almacen.registrarTurno],
     ["/api/turnos/actualizar", almacen.actualizarTurno],
@@ -76,10 +83,7 @@ export function crearServidor(almacen) {
           const consulta = new URL(solicitud.url, "http://localhost").searchParams.get("q");
           responderJson(respuesta, 200, consulta === null ? almacen.listarMascotas() : almacen.buscarMascotas(consulta));
         } else if (solicitud.method === "POST") {
-          const origen = solicitud.headers.origin;
-          if (origen && origen !== `http://${solicitud.headers.host}`) {
-            throw new ErrorSolicitud("Origen de la solicitud no permitido.", 403);
-          }
+          validarOrigen(solicitud);
           const datos = await leerJson(solicitud);
           responderJson(respuesta, 201, almacen.registrarMascota(datos));
         } else {
@@ -92,10 +96,7 @@ export function crearServidor(almacen) {
         if (["/api/turnos", "/api/veterinarios"].includes(ruta) && solicitud.method === "GET") {
           responderJson(respuesta, 200, ruta === "/api/turnos" ? almacen.estadoTurnos() : almacen.listarVeterinarios());
         } else if (solicitud.method === "POST") {
-          const origen = solicitud.headers.origin;
-          if (origen && origen !== `http://${solicitud.headers.host}`) {
-            throw new ErrorSolicitud("Origen de la solicitud no permitido.", 403);
-          }
+          validarOrigen(solicitud);
           const datos = await leerJson(solicitud);
           const operacion = rutasTurnos.get(ruta);
           responderJson(respuesta, ["/api/turnos", "/api/veterinarios"].includes(ruta) ? 201 : 200, operacion(datos));
