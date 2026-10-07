@@ -1,15 +1,13 @@
 import { fileURLToPath } from "node:url";
 import { crearAlmacen } from "./db/database.mjs";
 import { crearServidor } from "./api/servidor.mjs";
+import { leerConfiguracion } from "./configuracion.mjs";
 
-const puerto = Number(process.env.PORT ?? 3000);
-if (!Number.isInteger(puerto) || puerto < 1 || puerto > 65535) {
-  throw new Error("PORT debe ser un puerto entre 1 y 65535.");
-}
+const { puerto, host, origenPublico } = leerConfiguracion();
 const rutaDatos = process.env.VETERINARIA_DB_PATH
   || fileURLToPath(new URL("data/veterinaria.db", import.meta.url));
 const almacen = crearAlmacen(rutaDatos);
-const servidor = crearServidor(almacen);
+const servidor = crearServidor(almacen, { origenPublico });
 
 servidor.once("close", () => almacen.cerrar());
 servidor.on("error", (error) => {
@@ -20,9 +18,10 @@ servidor.on("error", (error) => {
 process.on("SIGINT", () => servidor.close());
 process.on("SIGTERM", () => servidor.close());
 
-// Por ahora ejecutamos la aplicación solo en el equipo local.
-servidor.listen(puerto, "127.0.0.1", () => {
+// Localmente solo acepta conexiones del equipo; HOST permite configurar el alojamiento.
+servidor.listen(puerto, host, () => {
   console.log(`Veterinaria disponible en http://localhost:${puerto}`);
+  if (origenPublico) console.log('Dirección pública configurada:', origenPublico);
   console.log("Registros persistentes en:", rutaDatos);
   console.log("Presiona Ctrl+C para detener el servidor.");
 });

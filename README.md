@@ -16,6 +16,8 @@ npm.cmd start
 
 Abre http://localhost:3000. Detén el servidor con `Ctrl+C`. Esta etapa usa solo módulos incluidos en Node.js y no necesita instalar dependencias externas. Debes acceder mediante el servidor; abrir el HTML directamente ya no permite consultar ni guardar registros.
 
+Para el día de la exposición, sigue [encender, respaldar y exponer](docs/ENCENDER_Y_EXPONER.md). La [guía de publicación](docs/PUBLICACION.md) describe la configuración del alojamiento y lo que falta verificar.
+
 Las guías están en [clase 1](docs/LECCION_01.md), [clase 2](docs/LECCION_02.md), [clase 3 sobre la cola](docs/LECCION_03.md), [clase 4 sobre visitas y búsqueda](docs/LECCION_04.md), [clase 5 sobre urgencias](docs/LECCION_05.md), [clase 6 sobre veterinarios y grafo](docs/LECCION_06.md) y [clase 7 sobre historial y lista enlazada](docs/LECCION_07.md).
 
 ## Base de datos y API
@@ -76,7 +78,7 @@ Para consultar el historial se leen las consultas de una mascota de la más anti
 
 El archivo de datos se conserva al detener el servidor y se excluye de Git. Al descargar el código en otro equipo se crea una base vacía. Para la publicación posterior se deberá elegir un servidor con almacenamiento persistente para SQLite.
 
-Opcionalmente, `PORT` cambia el puerto local y `VETERINARIA_DB_PATH` indica otra ruta de base de datos. El módulo `node:sqlite` puede mostrar `ExperimentalWarning` en la versión de Node utilizada; las pruebas se ejecutaron con esa versión. Referencia: [SQLite en Node.js](https://nodejs.org/download/release/v24.8.0/docs/api/sqlite.html).
+Opcionalmente, `PORT` cambia el puerto y `VETERINARIA_DB_PATH` indica otra ruta de base de datos. `HOST` configura la escucha (localmente `127.0.0.1`; en un alojamiento `0.0.0.0`). `PUBLIC_URL` indica el origen público HTTP o HTTPS permitido; si se omite, se usa `RENDER_EXTERNAL_URL` cuando existe. La configuración local sigue funcionando sin variables adicionales. El módulo `node:sqlite` puede mostrar `ExperimentalWarning` en la versión de Node utilizada; las pruebas se ejecutaron con esa versión. Referencia: [SQLite en Node.js](https://nodejs.org/download/release/v24.8.0/docs/api/sqlite.html).
 
 ## Comprobaciones
 
