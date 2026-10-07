@@ -1,15 +1,25 @@
 {
   "name": "veterinaria",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "private": true,
   "description": "Sistema académico de turnos para una veterinaria",
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
     "datos:demo": "node scripts/cargar-demo.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "web:preparar": "node scripts/preparar-web.mjs",
+    "web:probar": "npm run web:preparar && wrangler dev --port 3001 --persist-to .test-data/cloudflare",
+    "web:comprobar": "npm run web:preparar && wrangler deploy --dry-run --outdir dist/worker",
+    "web:publicar": "npm run web:preparar && wrangler deploy"
   },
   "engines": {
     "node": ">=24"
+  },
+  "devDependencies": {
+    "wrangler": "^4.148.0"
+  },
+  "overrides": {
+    "sharp": "0.35.5"
   }
 }

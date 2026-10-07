@@ -75,3 +75,7 @@ Los respaldos contienen los mismos datos que la aplicación y no se suben a GitH
 7. Recargar para mostrar que los datos guardados persisten.
 
 El recorrido detallado y los ejemplos están en [DEMOSTRACION.md](DEMOSTRACION.md). Esta demostración local funciona sin internet una vez que el proyecto y Node están en el computador. Para cumplir la entrega también falta verificar el enlace público.
+
+## Versión publicada y versión local
+
+La versión gratuita de Cloudflare funciona desde su enlace público, sin encender el servidor de tu computador. Para usarla necesitas internet. Su base es distinta de la local: registrar una mascota en `localhost:3000` no la registra en internet. Para exponer con tus registros locales usa los pasos de encendido anteriores; el enlace público sirve para que el profesor también pueda probar la aplicación desde otro equipo.

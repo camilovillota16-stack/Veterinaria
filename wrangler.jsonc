@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "vetturnos-camilo",
+  "main": "cloudflare/worker.mjs",
+  "compatibility_date": "2026-10-06",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./dist/web",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "CLINICA", "class_name": "Clinica" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Clinica"] }]
+}

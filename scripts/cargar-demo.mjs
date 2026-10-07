@@ -1,6 +1,7 @@
 // Mascotas ficticias para practicar y preparar la demostración del proyecto.
 // Se registran por la API, igual que desde el formulario, para actualizar el trie.
-const base = "http://127.0.0.1:3000";
+import { leerConfiguracion } from '../configuracion.mjs';
+const base = leerConfiguracion({ PUBLIC_URL: process.argv[2] || 'http://127.0.0.1:3000' }).origenPublico;
 const ejemplos = [
   { nombre: "Luna", especie: "Gato", raza: "Siamés", propietario: "Demo Ana" },
   { nombre: "Max", especie: "Perro", raza: "Labrador", propietario: "Demo Bruno" },

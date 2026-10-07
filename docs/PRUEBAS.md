@@ -160,3 +160,13 @@ Al reiniciar el servidor principal, se conservaron sus siete mascotas y cuatro v
 El 6 de octubre de 2026 pasaron 53 pruebas automatizadas. Las cuatro nuevas verifican valores locales y alojados de configuración, prioridad de la dirección pública explícita sobre la proporcionada por Render, puertos y orígenes inválidos, solicitudes del mismo origen local y el flujo de registro, edición, llamada y cierre con un origen HTTPS configurado y un servidor interno HTTP. Todas las rutas de escritura rechazan orígenes ajenos incluso con encabezados X-Forwarded falsificados. La prueba HTTPS simula el encabezado que envía el navegador detrás de un proxy; no representa un despliegue real ni una conexión TLS local.
 
 Se añadieron las guías ENCENDER_Y_EXPONER.md y PUBLICACION.md. La configuración local continúa usando 127.0.0.1:3000 sin variables adicionales. Las comprobaciones de sintaxis y diferencias pasaron. La publicación y la persistencia en el servidor público todavía deben comprobarse después de elegir el almacenamiento.
+
+## Adaptación gratuita a Cloudflare
+
+El 6 de octubre pasaron 56 pruebas automatizadas: las 53 anteriores y tres de la API del Worker. Cubren búsqueda, varios servicios, urgencias, cierre con notas e historial, copias históricas después de editar profesionales, validación de origen, métodos, referencias, JSON y límite de bytes, y rechazo de notas inválidas sin cerrar el turno.
+
+Se extrajeron las reglas y estructuras a `db/almacen.mjs`. El adaptador Node conserva `BEGIN IMMEDIATE`, `COMMIT` y `ROLLBACK`; el de Cloudflare usa `storage.transactionSync`. Las pruebas previas de migraciones, persistencia y fallos simulados continuaron pasando. La comprobación `web:comprobar` generó el Worker sin publicar y mostró sus dos recursos: Clinica y Assets.
+
+En el emulador oficial se cargaron seis mascotas y cuatro profesionales ficticios en una base independiente. Se verificó el orden Nala urgente 3, Rocky urgente 3, Max urgente 2 y Luna normal con dos servicios. Se abrieron cuatro consultas con veterinarios distintos; cerrar Luna dejó tres abiertas. Las dos Luna conservaron historiales separados. Se rechazó llamar al segundo normal antes del primero. Dos llamadas concurrentes al mismo veterinario produjeron un éxito y un rechazo; el siguiente turno no se saltó. Después de reiniciar el emulador, se conservaron las dos consultas de la primera Luna en el mismo orden.
+
+La instalación de herramientas terminó con cero vulnerabilidades después de actualizar la dependencia de imágenes del emulador. Los datos de esta prueba no se incorporaron a la base local principal.
